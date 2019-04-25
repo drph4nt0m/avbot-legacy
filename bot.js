@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 });
 
 
-app.listen(process.env.port || 4040, () => console.log(`AvBot Started`));
+app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 
 const logger = winston.createLogger({
   level: "info",
