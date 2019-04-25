@@ -21,9 +21,8 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-const PORT = process.env.port || 4040;
 
-app.listen(PORT, () => console.log(`AvBot listening on port ${PORT}!`));
+app.listen(process.env.port || 4040, () => console.log(`AvBot Started`));
 
 const logger = winston.createLogger({
   level: "info",
