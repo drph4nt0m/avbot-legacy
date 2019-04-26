@@ -981,6 +981,7 @@ bot.on("message", async msg => {
         if (metar.error) {
           metarAvailable = false;
         } else {
+          rawMetar = metar.raw;
           readableMetar = metar.speech;
         }
 
@@ -1003,7 +1004,7 @@ bot.on("message", async msg => {
               .setFooter('This is not a source for official briefing. Please use the appropriate forums.')
 
             if (metarAvailable) {
-              briefEmbed.addField(`**METAR**`, `${readableMetar}`)
+              briefEmbed.addField(`**METAR**`, `**Raw Report**\n${rawMetar}\n**Readable Report**\n${readableMetar}`)
             }
 
             if (chartAvailable) {
