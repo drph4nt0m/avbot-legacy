@@ -21,7 +21,6 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname + '/index.html'));
 });
 
-
 app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 
 const logger = winston.createLogger({
@@ -841,15 +840,33 @@ bot.on("message", async msg => {
           let icaoEmbed = new Discord.RichEmbed()
             .setTitle(`${ICAO}`)
             .setColor(successColor)
-            .addField(`ICAO`, info.icao, true)
-            .addField(`IATA`, info.iata, true)
-            .addField(`Elevation`, info.elevation)
-            .addField(`Latitude`, info.latitude, true)
-            .addField(`Longitude`, info.longitude, true)
-            .addField(`Name`, info.name)
-            .addField(`City`, info.city, true)
-            .addField(`Country`, info.country, true)
-            .addField(`Runways`, runways)
+            if(info.icao) {
+              icaoEmbed.addField(`ICAO`, info.icao, true)
+            }
+            if(info.iata) {
+              icaoEmbed.addField(`IATA`, info.iata, true)
+            }
+            if(info.elevation) {
+              icaoEmbed.addField(`Elevation`, info.elevation)
+            }
+            if(info.latitude) {
+              icaoEmbed.addField(`Latitude`, info.latitude, true)
+            }
+            if(info.longitude) {
+              icaoEmbed.addField(`Longitude`, info.longitude, true)
+            }
+            if(info.name) {
+              icaoEmbed.addField(`Name`, info.name)
+            }
+            if(info.city) {
+              icaoEmbed.addField(`City`, info.city, true)
+            }
+            if(info.country) {
+              icaoEmbed.addField(`Country`, info.country, true)
+            }
+            if(info.runways) {
+              icaoEmbed.addField(`Runways`, runways)
+            }
 
             msg.channel.send(icaoEmbed);
             logger.log(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
