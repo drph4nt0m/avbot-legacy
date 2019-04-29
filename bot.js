@@ -340,7 +340,7 @@ bot.on("message", async msg => {
 											}
 										});
 									}
-								}
+                }
 							});
 							if (!presentFlag) {
 								let ivaoErrorEmbed = new Discord.RichEmbed()
@@ -464,6 +464,131 @@ bot.on("message", async msg => {
           msg.channel.send(ivaoErrorEmbed);
           logger.log(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
 				}
+			});
+		}
+  }
+  
+
+  if (cmd == `${prefix}online`) {
+    FIR = ICAO.substring(0,2);
+    console.log(FIR);
+		if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+			var file = fs.createWriteStream('whazzup.txt.gz');
+			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
+				response.pipe(file);
+				response.on("end", () => {
+          logger.log(`info`, `Whazzup downloaded`);
+					const extract = inly(from, to);
+
+					extract.on('end', () => {
+            logger.log(`info`, `Whazzup extracted`);
+						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+							contents = contents.split('!GENERAL')[1];
+							let general = contents.split('!CLIENTS')[0];
+							contents = contents.split('!CLIENTS')[1];
+							let clients = contents.split('!AIRPORTS')[0];
+							contents = contents.split('!AIRPORTS')[1];
+							let airports = contents.split('!SERVERS')[0];
+							let servers = contents.split('!SERVERS')[1];
+
+							let generalArray = general.split('\n');
+							lastTimeUpdate = generalArray[3].split(' = ')[1];
+              logger.log(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+							let clientsArray = clients.split('\n');
+              
+              let presentFlag = false;
+              let found = [];
+							clientsArray.forEach(client => {
+								let decoded = client.split(':');
+								if (decoded[0].substring(0,2) == FIR) {
+									if (decoded[3] == 'ATC') {
+                    presentFlag = true;
+                    let temp = {
+                      callSign  : decoded[0],
+                      vid       : decoded[1],
+                      position  : facilityTypes[decoded[18]],
+                      frequency : decoded[4],
+                    }
+                    found.push(temp);
+									}
+                }
+              });
+              if (presentFlag) {
+                let onlineEmbed = new Discord.RichEmbed()
+                  .setTitle(`IVAO : ${ICAO}`)
+                  .setColor(successColor)
+                  .setFooter(`Source: IVAO API`);
+              
+                found.forEach(ele => {
+                onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
+                });
+      
+                msg.channel.send(onlineEmbed);
+                logger.log(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
+              } else {
+								let onlineErrorEmbed = new Discord.RichEmbed()
+									.setTitle(`IVAO : ${ICAO}`)
+									.setColor(errorColor)
+									.setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
+									.setFooter(`Source: IVAO API`);
+                
+                msg.channel.send(onlineErrorEmbed);
+                logger.log(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
+							}
+						});
+					});
+				});
+			});
+		} else {
+			fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+				contents = contents.split('!GENERAL')[1];
+				let general = contents.split('!CLIENTS')[0];
+				contents = contents.split('!CLIENTS')[1];
+				let clients = contents.split('!AIRPORTS')[0];
+				contents = contents.split('!AIRPORTS')[1];
+				let airports = contents.split('!SERVERS')[0];
+				let servers = contents.split('!SERVERS')[1];
+        let clientsArray = clients.split('\n');
+        
+				let presentFlag = false;
+        found = [];
+        clientsArray.forEach(client => {
+          let decoded = client.split(':');
+          if (decoded[0].substring(0,2) == FIR) {
+            if (decoded[3] == 'ATC') {
+              presentFlag = true;
+              temp = {
+                callSign  : decoded[0],
+                vid       : decoded[1],
+                position  : facilityTypes[decoded[18]],
+                frequency : decoded[4],
+              }
+              found.push(temp);
+            }
+          }
+        });
+        if (presentFlag) {
+          let onlineEmbed = new Discord.RichEmbed()
+            .setTitle(`IVAO : ${ICAO}`)
+            .setColor(successColor)
+            .setFooter(`Source: IVAO API`);
+          
+          found.forEach(ele => {
+           onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
+          });
+
+          msg.channel.send(onlineEmbed);
+          logger.log(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
+        } else {
+          let onlineErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`IVAO : ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
+            .setFooter(`Source: IVAO API`);
+          
+          msg.channel.send(onlineErrorEmbed);
+          logger.log(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
+        }
 			});
 		}
 	}
@@ -1192,6 +1317,7 @@ bot.on("message", async msg => {
 			.addField(`${prefix}brief [ICAO]`, `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`)
 			.addField(`${prefix}icao [ICAO]`, `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`)
 			.addField(`${prefix}ivao [CALLSIGN]`, `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`)
+			.addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
 			.addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
 			.addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
 			.addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
