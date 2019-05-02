@@ -1,4 +1,5 @@
 const converter = require('number-to-words');
+const request = require("request");
 
 module.exports = {
   capsFirst: function (string) {
@@ -38,5 +39,18 @@ module.exports = {
       result += ' ';
     }
     return result;
+  },
+
+  logger: function (type, content) {
+    request.post(process.env.webhook, {
+      json: {
+        content: `[${type.toUpperCase()}]\n${content}`
+      }
+    }, (error, res, body) => {
+      if (error) {
+        console.error(error)
+        return
+      }
+    })
   }
 }

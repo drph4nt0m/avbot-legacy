@@ -65,12 +65,12 @@ const atcRatings = ['', 'Observer', 'AS1', 'AS2', 'AS3', 'ADC', 'APC', 'ACC', 'S
 
 const bot = new Discord.Client();
 
-bot.on("error", e => logger.log(`error`, e));
-bot.on("warn", e => logger.log(`warn`, e));
+bot.on("error", e => functions.logger(`error`, e));
+bot.on("warn", e => functions.logger(`warn`, e));
 
 bot.on("ready", () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
-  logger.log(`info`, `AvBot v2 is online`);
+  functions.logger(`info`, `AvBot v2 is online`);
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
@@ -107,17 +107,17 @@ bot.on("ready", () => {
 			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          logger.log(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            logger.log(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
 							let generalArray = general.split('\n');
 							lastTimeUpdate = generalArray[3].split(' = ')[1];
-							logger.log(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+							functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
 						});
 					});
 				});
@@ -133,30 +133,30 @@ bot.on("ready", () => {
 				var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
 					response.pipe(file);
 					response.on("end", () => {
-            logger.log(`info`, `Whazzup downloaded`);
+            functions.logger(`info`, `Whazzup downloaded`);
 						const extract = inly(from, to);
 
 						extract.on('end', () => {
-              logger.log(`info`, `Whazzup extracted`);
+              functions.logger(`info`, `Whazzup extracted`);
 							fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 								contents = contents.split('!GENERAL')[1];
 								let general = contents.split('!CLIENTS')[0];
 								let generalArray = general.split('\n');
 								lastTimeUpdate = generalArray[3].split(' = ')[1];
-								logger.log(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+								functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
 							});
 						});
 					});
 				});
 			} else {
-				logger.log(`info`, `Whazzup last updated at ${lastTimeUpdate}`);
+				functions.logger(`info`, `Whazzup last updated at ${lastTimeUpdate}`);
 			}
 		}
 	});
 });
 
 bot.on("guildCreate", guild => {
-  logger.log(`info`, `New guild added ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
+  functions.logger(`info`, `New guild added ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
 
   let welcomeEmbed = new Discord.RichEmbed()
     .setTitle(`Hello ${guild.name} and thank you for choosing AvBot`)
@@ -168,7 +168,7 @@ bot.on("guildCreate", guild => {
     .filter(c => c.type === "text")
     .first()
     .send(welcomeEmbed)
-    .then(logger.log(`info`, `Sent Welcome Message to ${guild.name}.`));
+    .then(functions.logger(`info`, `Sent Welcome Message to ${guild.name}.`));
 
   let time_join = moment.tz(guild.joined_at, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   let owner = bot.users.find(user => user.id === guild.ownerID);
@@ -189,7 +189,7 @@ bot.on("guildCreate", guild => {
 });
 
 bot.on("guildDelete", guild => {
-  logger.log(`info`, `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
+  functions.logger(`info`, `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
 
   let time_join = moment.tz(guild.joined_at, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   let owner = bot.users.find(user => user.id === guild.ownerID);
@@ -226,7 +226,7 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
 	let timeform3 = time.format('DD/MM HH:mm');
 
-  logger.log(`info`, `[MESSAGE] "${msg}" by ${msg.author.tag}`);
+  functions.logger(`info`, `[MESSAGE] "${msg}" by ${msg.author.tag}`);
 
 
   if (cmd == `${prefix}ivao`) {
@@ -236,11 +236,11 @@ bot.on("message", async msg => {
 			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          logger.log(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            logger.log(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
@@ -252,7 +252,7 @@ bot.on("message", async msg => {
 
 							let generalArray = general.split('\n');
 							lastTimeUpdate = generalArray[3].split(' = ')[1];
-              logger.log(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+              functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
 							let clientsArray = clients.split('\n');
 							let presentFlag = false;
 							clientsArray.forEach(client => {
@@ -302,7 +302,7 @@ bot.on("message", async msg => {
 											.setFooter(`Source: IVAO API`);
                     
                     msg.channel.send(ivaoEmbed);
-                    logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                    functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 									} else if (decoded[3] == 'ATC') {
 										presentFlag = true;
 
@@ -322,7 +322,7 @@ bot.on("message", async msg => {
 													.setFooter(`Source: IVAO API`);
                         
                         msg.channel.send(ivaoEmbed);
-                        logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                        functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											} else {
 												let ivaoEmbed = new Discord.RichEmbed()
 													.setTitle(`IVAO : ${info.city} ${facilityTypes2[decoded[18]]}`)
@@ -336,7 +336,7 @@ bot.on("message", async msg => {
 													.setFooter(`Source: IVAO API`);
                         
                         msg.channel.send(ivaoEmbed);
-                        logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                        functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											}
 										});
 									}
@@ -350,7 +350,7 @@ bot.on("message", async msg => {
 									.setFooter(`Source: IVAO API`);
                 
                 msg.channel.send(ivaoErrorEmbed);
-                logger.log(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
+                functions.logger(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
 							}
 						});
 					});
@@ -414,7 +414,7 @@ bot.on("message", async msg => {
 								.setFooter(`Source: IVAO API`);
               
               msg.channel.send(ivaoEmbed);
-              logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+              functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 						} else if (decoded[3] == 'ATC') {
 							presentFlag = true;
 
@@ -434,7 +434,7 @@ bot.on("message", async msg => {
 										.setFooter(`Source: IVAO API`);
                   
                   msg.channel.send(ivaoEmbed);
-                  logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                  functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								} else {
 									let ivaoEmbed = new Discord.RichEmbed()
 										.setTitle(`IVAO : ${info.city} ${facilityTypes2[decoded[18]]}`)
@@ -448,7 +448,7 @@ bot.on("message", async msg => {
 										.setFooter(`Source: IVAO API`);
                   
                   msg.channel.send(ivaoEmbed);
-                  logger.log(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                  functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								}
 							});
 						}
@@ -462,7 +462,7 @@ bot.on("message", async msg => {
 						.setFooter(`Source: IVAO API`);
           
           msg.channel.send(ivaoErrorEmbed);
-          logger.log(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
+          functions.logger(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
 				}
 			});
 		}
@@ -477,11 +477,11 @@ bot.on("message", async msg => {
 			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          logger.log(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            logger.log(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
@@ -493,7 +493,7 @@ bot.on("message", async msg => {
 
 							let generalArray = general.split('\n');
 							lastTimeUpdate = generalArray[3].split(' = ')[1];
-              logger.log(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+              functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
 							let clientsArray = clients.split('\n');
               
               let presentFlag = false;
@@ -524,7 +524,7 @@ bot.on("message", async msg => {
                 });
       
                 msg.channel.send(onlineEmbed);
-                logger.log(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
+                functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
               } else {
 								let onlineErrorEmbed = new Discord.RichEmbed()
 									.setTitle(`IVAO : ${ICAO}`)
@@ -533,7 +533,7 @@ bot.on("message", async msg => {
 									.setFooter(`Source: IVAO API`);
                 
                 msg.channel.send(onlineErrorEmbed);
-                logger.log(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
+                functions.logger(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
 							}
 						});
 					});
@@ -578,7 +578,7 @@ bot.on("message", async msg => {
           });
 
           msg.channel.send(onlineEmbed);
-          logger.log(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
+          functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
         } else {
           let onlineErrorEmbed = new Discord.RichEmbed()
             .setTitle(`IVAO : ${ICAO}`)
@@ -587,7 +587,7 @@ bot.on("message", async msg => {
             .setFooter(`Source: IVAO API`);
           
           msg.channel.send(onlineErrorEmbed);
-          logger.log(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
+          functions.logger(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
         }
 			});
 		}
@@ -614,7 +614,7 @@ bot.on("message", async msg => {
             .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
 
           msg.author.send(chartsEmbed);
-          logger.log(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+          functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
 
           if (msg.guild != null) {
             chartsEmbed = new Discord.RichEmbed()
@@ -636,7 +636,7 @@ bot.on("message", async msg => {
                 .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
 
               msg.author.send(chartsEmbed);
-              logger.log(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+              functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
 
               if (msg.guild != null) {
                 chartsEmbed = new Discord.RichEmbed()
@@ -653,7 +653,7 @@ bot.on("message", async msg => {
                 .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
 
               msg.channel.send(chartErrorEmbed);
-              logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+              functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
             }
           })
         }
@@ -666,7 +666,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
       msg.channel.send(chartErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
+      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
     }
   }
 
@@ -685,7 +685,7 @@ bot.on("message", async msg => {
             .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
 
           msg.channel.send(metarErrorEmbed);
-          logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`);
+          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`);
         } else {
           let raw = metar.raw;
           let readable = "";
@@ -819,7 +819,7 @@ bot.on("message", async msg => {
             .setFooter(`This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `);
 
           msg.channel.send(metarEmbed);
-          logger.log(`info`, `${ICAO} METAR sent to ${msg.author.tag}`);
+          functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`);
         }
       });
     } else {
@@ -829,7 +829,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
       msg.channel.send(metarErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `);
+      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `);
     }
   }
 
@@ -848,7 +848,7 @@ bot.on("message", async msg => {
             .setDescription(`${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`);
 
           msg.channel.send(tafErrorEmbed);
-          logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`);
+          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`);
         } else {
           let raw = `**Raw Report**\n ${taf.raw}\n`;
           let readable = `${raw}\n **Readable Report**\n`;
@@ -889,7 +889,7 @@ bot.on("message", async msg => {
             .setFooter(`This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `);
 
           msg.channel.send(tafEmbed);
-          logger.log(`info`, `${ICAO} TAF sent to ${msg.author.tag}`);
+          functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`);
         }
       })
     } else {
@@ -899,7 +899,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
       msg.channel.send(tafErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `);
+      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `);
     }
   }
 
@@ -918,7 +918,7 @@ bot.on("message", async msg => {
             .setFooter('This is not a source for official briefing. Please use the appropriate forums');
           
           msg.channel.send(notamEmbed);
-          logger.log(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`);
+          functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`);
         } else {
           let notamErrorEmbed = new Discord.RichEmbed()
             .setTitle(`NOTAMs for ${ICAO}`)
@@ -926,7 +926,7 @@ bot.on("message", async msg => {
             .setDescription(`${msg.author}, NOTAM not found for ${ICAO}.`);
 
           msg.channel.send(notamErrorEmbed);
-          logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`);
+          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`);
         }
       });
     } else {
@@ -936,7 +936,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
       msg.channel.send(notamErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `);
+      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `);
     }
   }
   
@@ -955,7 +955,7 @@ bot.on("message", async msg => {
             .setDescription(`${msg.author}, Information not available for ${ICAO}`);
 
           msg.channel.send(icaoErrorEmbed);
-          logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`);
+          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`);
         } else {
           let r = info.runways;
           let runways = "";
@@ -994,7 +994,7 @@ bot.on("message", async msg => {
             }
 
             msg.channel.send(icaoEmbed);
-            logger.log(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
+            functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
         }
       })
     } else {
@@ -1004,7 +1004,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
       msg.channel.send(icaoErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
+      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
     }
   }
 
@@ -1016,7 +1016,7 @@ bot.on("message", async msg => {
 				.setDescription(`${timeform3} Z`)
         
       msg.channel.send(zuluEmbed);
-      logger.log(`info`, `Zulu time sent to ${msg.author.tag}`);
+      functions.logger(`info`, `Zulu time sent to ${msg.author.tag}`);
     } else {
       if(params.length == 2) {
 
@@ -1034,7 +1034,7 @@ bot.on("message", async msg => {
               .setFooter(`Hint: Time should be in 24 hours and of format HHMM`)
 
             msg.channel.send(zuluErrorEmbed);
-            logger.log(`warn`, `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${timeParam} is not a valid time`);
+            functions.logger(`warn`, `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${timeParam} is not a valid time`);
           } else {
             var latLong = icao[ICAO];
             var lat = latLong[0];
@@ -1063,7 +1063,7 @@ bot.on("message", async msg => {
                   .setDescription(`${timeToSend} Z`)
                 
                 msg.channel.send(zuluEmbed);
-                logger.log(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`);
+                functions.logger(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`);
               }
             });
           }
@@ -1074,7 +1074,7 @@ bot.on("message", async msg => {
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
         
           msg.channel.send(zuluErrorEmbed);
-          logger.log(`warn`, `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `);
+          functions.logger(`warn`, `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `);
         }
         
       } else {
@@ -1085,7 +1085,7 @@ bot.on("message", async msg => {
           .setFooter(`Hint : ${prefix}zulu [ICAO] [Local Time]`)
         
         msg.channel.send(zuluErrorEmbed);
-        logger.log(`warn`, `${msg.author.tag} asked for Zulu time but arguments were invalid`);
+        functions.logger(`warn`, `${msg.author.tag} asked for Zulu time but arguments were invalid`);
 			}
     }
   }
@@ -1139,7 +1139,7 @@ bot.on("message", async msg => {
             briefEmbed.addField(`**Zulu**`, `${timeform3} Z`)
 
             msg.channel.send(briefEmbed);
-            logger.log(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`);
+            functions.logger(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`);
           } else {
             let briefErrorEmbed = new Discord.RichEmbed()
               .setTitle(`Briefing for ${ICAO}`)
@@ -1147,7 +1147,7 @@ bot.on("message", async msg => {
               .setDescription(`${msg.author}, no briefing available for ${ICAO}`)
 
             msg.channel.send(briefErrorEmbed);
-            logger.log(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`);
+            functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`);
           }
         });
         req.end();
@@ -1159,7 +1159,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
     
       msg.channel.send(briefErrorEmbed);
-      logger.log(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `);
+      functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `);
     }
   }
 
@@ -1172,7 +1172,7 @@ bot.on("message", async msg => {
       .setDescription(`[Click here to add AvBot to your Discord server](${inviteURL})`)
 
     msg.author.send(linkEmbed);
-    logger.log(`info`, `Bot link sent to ${msg.author.tag}`);
+    functions.logger(`info`, `Bot link sent to ${msg.author.tag}`);
 
     if (msg.guild != null) {
       let linkEmbed2 = new Discord.RichEmbed()
@@ -1193,7 +1193,7 @@ bot.on("message", async msg => {
       .setDescription(`[Click here to join our AvBot Support Server](${process.env.AvBotSupportServer})`)
     
     msg.author.send(inviteEmbed);
-    logger.log(`info`, `Server link sent to ${msg.author.tag}`);
+    functions.logger(`info`, `Server link sent to ${msg.author.tag}`);
 
     if (msg.guild != null) {
       let inviteEmbed2 = new Discord.RichEmbed()
@@ -1207,7 +1207,7 @@ bot.on("message", async msg => {
   
   if(cmd == `${prefix}guild` || cmd == `${prefix}guilds`) {
     if (msg.author.id !== process.env.myID) {
-      logger.log(`error`, `${msg.author.tag} tried to check guilds`);
+      functions.logger(`error`, `${msg.author.tag} tried to check guilds`);
       return;
     }
     
@@ -1217,12 +1217,12 @@ bot.on("message", async msg => {
       .setDescription(`\`\`\`${bot.guilds.size}\`\`\``)
 
     msg.channel.send(guildsEmbed);
-    logger.log(`info`, `Guilds sent to ${msg.author.tag}`);
+    functions.logger(`info`, `Guilds sent to ${msg.author.tag}`);
   }
 
   if (cmd == `${prefix}purge`) {
     if (msg.author.id !== process.env.myID) {
-      logger.log(`error`, `${msg.author.tag} tried to delete messages `);
+      functions.logger(`error`, `${msg.author.tag} tried to delete messages `);
       return;
     }
     async function clear() {
@@ -1233,12 +1233,12 @@ bot.on("message", async msg => {
       msg.channel.bulkDelete(fetched);
     }
     clear();
-    logger.log(`info`, `Messages deleted by ${msg.author.tag}`);
+    functions.logger(`info`, `Messages deleted by ${msg.author.tag}`);
   }
 
   if (cmd == `${prefix}uptime`) {
     if (msg.author.id !== process.env.myID) {
-      logger.log(`error`, `${msg.author.tag} tried to check uptime `);
+      functions.logger(`error`, `${msg.author.tag} tried to check uptime `);
       return;
     }
     let totalSeconds = bot.uptime / 1000;
@@ -1253,12 +1253,12 @@ bot.on("message", async msg => {
       .setFooter("Wowie, maybe this is the longest time AvBot has been up?!?!?!!");
 
     msg.channel.send(uptimeEmbed);
-    logger.log(`info`, `Sent uptime (${hours} hrs, ${minutes} mins, ${~~seconds} secs) to ${msg.author.tag}`);
+    functions.logger(`info`, `Sent uptime (${hours} hrs, ${minutes} mins, ${~~seconds} secs) to ${msg.author.tag}`);
   }
 
   if (cmd == `${prefix}ping`) {
     if (msg.author.id !== process.env.myID) {
-      logger.log(`error`, `${msg.author.tag} tried to ping`);
+      functions.logger(`error`, `${msg.author.tag} tried to ping`);
       return;
     }
     let temp = new Discord.RichEmbed()
@@ -1272,12 +1272,12 @@ bot.on("message", async msg => {
       .addField("Roundtrip", `${editMsg.createdTimestamp - msg.createdTimestamp}ms`, true)
       .addField("Heartbeat", `${~~bot.ping}ms`, true);
     editMsg.edit(pingEmbed);
-    logger.log(`info`, `Sent ping (Roundtrip: ${editMsg.createdTimestamp - msg.createdTimestamp}ms, Heartbeat: ${~~bot.ping}ms) to ${msg.author.tag}`);
+    functions.logger(`info`, `Sent ping (Roundtrip: ${editMsg.createdTimestamp - msg.createdTimestamp}ms, Heartbeat: ${~~bot.ping}ms) to ${msg.author.tag}`);
   }
 
   if (cmd == `${prefix}restart`) {
     if (msg.author.id !== process.env.myID) {
-      logger.log(`error`, `${msg.author.tag} tried to restart the bot`);
+      functions.logger(`error`, `${msg.author.tag} tried to restart the bot`);
       return;
     }
     let restartEmbed = new Discord.RichEmbed()
@@ -1291,16 +1291,16 @@ bot.on("message", async msg => {
       .then(message => {
         msg.channel.lastMessage.delete();
       });
-    logger.log(`info`, `Manually restarted the bot by ${msg.author.tag}`);
+    functions.logger(`info`, `Manually restarted the bot by ${msg.author.tag}`);
   }
 
   // if (cmd == `${prefix}leave`) {
   //   if (msg.author.id !== msg.guild.ownerID || msg.guild.id === process.env.supportServerID) {
-  //     logger.log(`error`, `${msg.author.tag} tried to remove the bot from ${msg.guild.name}`);
+  //     functions.logger(`error`, `${msg.author.tag} tried to remove the bot from ${msg.guild.name}`);
   //     return;
   //   }
   //   msg.guild.leave();
-  //   logger.log(`info`, `${msg.author.tag} removed the bot from ${msg.guild.name}`);
+  //   functions.logger(`info`, `${msg.author.tag} removed the bot from ${msg.guild.name}`);
   // }
 
 
@@ -1324,7 +1324,7 @@ bot.on("message", async msg => {
 			.addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
 
     msg.channel.send(helpEmbed);
-    logger.log(`info`, `Help message sent to ${msg.author.tag}`);
+    functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
 	}
 });
 
