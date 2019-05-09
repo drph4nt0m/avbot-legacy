@@ -226,8 +226,7 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
 	let timeform3 = time.format('DD/MM HH:mm');
 
-  functions.logger(`info`, `[MESSAGE] "${msg}" by ${msg.author.tag}`);
-
+  functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
 
   if (cmd == `${prefix}ivao`) {
 
