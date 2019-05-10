@@ -6,6 +6,7 @@ const inly = require("inly");
 const path = require("path");
 const http = require("http");
 const request = require("request");
+const DBL = require("dblapi.js");
 
 const icao = require("icao");
 const notams = require("notams");
@@ -65,8 +66,13 @@ const atcRatings = ['', 'Observer', 'AS1', 'AS2', 'AS3', 'ADC', 'APC', 'ACC', 'S
 
 const bot = new Discord.Client();
 
+const dbl = new DBL(process.env.dblToken, bot);
+
 bot.on("error", e => functions.logger(`error`, e));
 bot.on("warn", e => functions.logger(`warn`, e));
+
+dbl.on('posted', () => functions.logger('info', 'Server count posted!'));
+dbl.on('error', e => functions.logger(`error`, `${e}`));
 
 bot.on("ready", () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
@@ -99,6 +105,9 @@ bot.on("ready", () => {
     type: "WATCHING"
   });
 
+  setInterval(() => {
+    dbl.postStats(bot.guilds.size, bot.shards.Id, bot.shards.total);
+  }, 1800000);
 
 
   fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
@@ -225,7 +234,7 @@ bot.on("message", async msg => {
 	let timeform = time.format('YYYY-MM-DD HH:mm:ss Z');
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
-  console.log(msg.guild.id);
+  
   if(msg.guild.id !== '264445053596991498') {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }

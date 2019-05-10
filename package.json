@@ -9,6 +9,7 @@
   "author": "targaryen",
   "license": "ISC",
   "dependencies": {
+    "dblapi.js": "^2.3.0",
     "discord.js": "^11.4.2",
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
