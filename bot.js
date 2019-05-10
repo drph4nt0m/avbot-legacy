@@ -224,9 +224,11 @@ bot.on("message", async msg => {
   let time = moment.utc();
 	let timeform = time.format('YYYY-MM-DD HH:mm:ss Z');
 	let timeform2 = time.format('HH:mm:ss');
-	let timeform3 = time.format('DD/MM HH:mm');
-
-  functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
+  let timeform3 = time.format('DD/MM HH:mm');
+  
+  if(msg.guild.id !== 264445053596991498) {
+    functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
+  }
 
   if (cmd == `${prefix}ivao`) {
 
@@ -1227,7 +1229,7 @@ bot.on("message", async msg => {
     async function clear() {
       msg.delete();
       const fetched = await msg.channel.fetchMessages({
-        limit: 10
+        limit: 50
       });
       msg.channel.bulkDelete(fetched);
     }
