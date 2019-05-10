@@ -235,7 +235,8 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
   
-  if(msg.guild.id !== '264445053596991498') {
+  if(msg.content[0] == prefix) {
+    console.log(1)
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
