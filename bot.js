@@ -225,8 +225,8 @@ bot.on("message", async msg => {
 	let timeform = time.format('YYYY-MM-DD HH:mm:ss Z');
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
-  
-  if(msg.guild.id !== 264445053596991498) {
+  console.log(msg.guild.id);
+  if(msg.guild.id !== '264445053596991498') {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
