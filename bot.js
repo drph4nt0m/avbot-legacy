@@ -104,9 +104,8 @@ bot.on("ready", () => {
   bot.user.setActivity(`${prefix}help`, {
     type: "WATCHING"
   });
-
   setInterval(() => {
-    dbl.postStats(bot.guilds.size, bot.shards.Id, bot.shards.total);
+    dbl.postStats(bot.guilds.size, bot.shard.id, bot.shard.total);
   }, 1800000);
 
 
