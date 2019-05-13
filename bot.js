@@ -235,11 +235,11 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
   
-  if(msg.content[0] == prefix) {
-    console.log(1)
+  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}help`) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
+  
   if (cmd == `${prefix}ivao`) {
 
 		if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
@@ -680,6 +680,7 @@ bot.on("message", async msg => {
       functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
     }
   }
+
 
   if (cmd == `${prefix}metar`) {
     if (args.length === 1) return;
