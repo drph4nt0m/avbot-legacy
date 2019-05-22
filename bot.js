@@ -608,6 +608,26 @@ bot.on("message", async msg => {
   if (cmd == `${prefix}chart` || cmd == `${prefix}charts`) {
     if (args.length === 1) return;
 
+    if (ICAO == 'VOKN') {
+      let chartsEmbed = new Discord.RichEmbed()
+        .setTitle(`Chart for ${ICAO}`)
+        .setColor(successColor)
+        .setDescription(`[Click here for ${ICAO} Charts](https://avbotserver4.herokuapp.com/chart/vokn)`)
+        .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
+
+      msg.author.send(chartsEmbed);
+      functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+
+      if (msg.guild != null) {
+        chartsEmbed = new Discord.RichEmbed()
+          .setTitle(`Chart for ${ICAO}`)
+          .setColor(successColor)
+          .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
+
+        msg.channel.send(chartsEmbed);
+      }
+    }
+
     if (icao[ICAO]) {
       let options = {
         method: "HEAD",
