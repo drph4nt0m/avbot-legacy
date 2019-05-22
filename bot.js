@@ -626,6 +626,7 @@ bot.on("message", async msg => {
 
         msg.channel.send(chartsEmbed);
       }
+      return null;
     }
 
     if (icao[ICAO]) {
