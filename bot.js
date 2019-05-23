@@ -984,11 +984,6 @@ bot.on("message", async msg => {
             functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
           }
         } else {
-          let r = info.runways;
-          let runways = "";
-          r.forEach(rw => {
-            runways += `${rw.ident1}-${rw.ident2} : Length - ${rw.length}, Width - ${rw.width}\n`
-          });
           let icaoEmbed = new Discord.RichEmbed()
             .setTitle(`${ICAO}`)
             .setColor(successColor)
@@ -997,15 +992,6 @@ bot.on("message", async msg => {
             }
             if(info.iata) {
               icaoEmbed.addField(`IATA`, info.iata, true)
-            }
-            if(info.elevation) {
-              icaoEmbed.addField(`Elevation`, info.elevation)
-            }
-            if(info.latitude) {
-              icaoEmbed.addField(`Latitude`, info.latitude, true)
-            }
-            if(info.longitude) {
-              icaoEmbed.addField(`Longitude`, info.longitude, true)
             }
             if(info.name) {
               icaoEmbed.addField(`Name`, info.name)
@@ -1016,8 +1002,41 @@ bot.on("message", async msg => {
             if(info.country) {
               icaoEmbed.addField(`Country`, info.country, true)
             }
+            if(info.type) {
+              icaoEmbed.addField(`Type`, `${functions.capsFirst(info.type.split('_')[0])} Airport`, true)
+            }
+            if(info.latitude) {
+              icaoEmbed.addField(`Latitude`, info.latitude, true)
+            }
+            if(info.longitude) {
+              icaoEmbed.addField(`Longitude`, info.longitude, true)
+            }
+            if(info.elevation_ft) {
+              icaoEmbed.addField(`Elevation`, `${info.elevation_ft} ft`, true)
+            }
             if(info.runways) {
+              let r = info.runways;
+              let runways = "";
+              r.forEach(rw => {
+                if(rw.length_ft!=0 && rw.width_ft!=0) {
+                  runways += `${rw.ident1}-${rw.ident2} : Length - ${rw.length_ft}, Width - ${rw.width_ft}\n`
+                } else {
+                  runways += `${rw.ident1}-${rw.ident2} : Length - NA, Width - NA\n`
+                }
+              });
               icaoEmbed.addField(`Runways`, runways)
+            }
+            if(info.website || info.wiki) {
+              let links = '';
+              if(info.website) {
+                links += `Official Website: ${info.website}`;
+                if(info.wiki) {
+                links += `\nWikipedia: ${info.wiki}`;
+                }
+              } else if(info.wiki) {
+                links += `\nWikipedia: ${info.wiki}`;
+              }
+              icaoEmbed.addField(`More Info`, links)
             }
 
             msg.channel.send(icaoEmbed);
