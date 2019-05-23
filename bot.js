@@ -607,29 +607,7 @@ bot.on("message", async msg => {
 
   if (cmd == `${prefix}chart` || cmd == `${prefix}charts`) {
     if (args.length === 1) return;
-
-    if (ICAO == 'VOKN') {
-      let chartsEmbed = new Discord.RichEmbed()
-        .setTitle(`Chart for ${ICAO}`)
-        .setColor(successColor)
-        .setDescription(`[Click here for ${ICAO} Charts](https://avbotserver4.herokuapp.com/chart/vokn)`)
-        .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
-
-      msg.author.send(chartsEmbed);
-      functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
-
-      if (msg.guild != null) {
-        chartsEmbed = new Discord.RichEmbed()
-          .setTitle(`Chart for ${ICAO}`)
-          .setColor(successColor)
-          .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
-
-        msg.channel.send(chartsEmbed);
-      }
-      return null;
-    }
-
-    if (icao[ICAO]) {
+    
       let options = {
         method: "HEAD",
         host: "vau.aero",
@@ -679,46 +657,59 @@ bot.on("message", async msg => {
                 msg.channel.send(chartsEmbed);
               }
             } else {
-              let chartErrorEmbed = new Discord.RichEmbed()
-                .setTitle(`Chart for ${ICAO}`)
-                .setColor(errorColor)
-                .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
 
-              msg.channel.send(chartErrorEmbed);
-              functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+              if (icao[ICAO]) {
+                let chartErrorEmbed = new Discord.RichEmbed()
+                  .setTitle(`Chart for ${ICAO}`)
+                  .setColor(errorColor)
+                  .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
+  
+                msg.channel.send(chartErrorEmbed);
+                functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+              } else {
+                let chartErrorEmbed = new Discord.RichEmbed()
+                  .setTitle(`Chart for ${ICAO}`)
+                  .setColor(errorColor)
+                  .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+          
+                msg.channel.send(chartErrorEmbed);
+                functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
+              }
             }
           })
         }
       });
       req.end();
-    } else {
-      let chartErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`Chart for ${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-
-      msg.channel.send(chartErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
-    }
+    
   }
 
 
   if (cmd == `${prefix}metar`) {
     if (args.length === 1) return;
 
-    if (icao[ICAO]) {
       let url = avwx + `metar/${ICAO}?options=info,translate,speech`;
 
       request(url, function (err, response, body) {
         let metar = JSON.parse(body);
         if (metar.error) {
-          let metarErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`METAR for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
+          if (icao[ICAO]) {
 
-          msg.channel.send(metarErrorEmbed);
-          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`);
+            let metarErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`METAR for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
+
+            msg.channel.send(metarErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`);
+          } else {
+            let metarErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`METAR for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+      
+            msg.channel.send(metarErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `);
+          }
         } else {
           let raw = metar.raw;
           let readable = "";
@@ -855,15 +846,6 @@ bot.on("message", async msg => {
           functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`);
         }
       });
-    } else {
-      let metarErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`METAR for ${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-
-      msg.channel.send(metarErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `);
-    }
   }
 
   if (cmd == `${prefix}taf`) {
