@@ -851,19 +851,28 @@ bot.on("message", async msg => {
   if (cmd == `${prefix}taf`) {
     if (args.length === 1) return;
 
-    if (icao[ICAO]) {
       let url = avwx + `taf/${ICAO}?options=info,translate,speech`;
 
       request(url, function (err, response, body) {
         let taf = JSON.parse(body);
         if (taf.error) {
-          let tafErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`TAF for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`);
+          if (icao[ICAO]) {
+            let tafErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`TAF for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`);
 
-          msg.channel.send(tafErrorEmbed);
-          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`);
+            msg.channel.send(tafErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`);
+          } else {
+            let tafErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`TAF for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+      
+            msg.channel.send(tafErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `);
+          }
         } else {
           let raw = `**Raw Report**\n ${taf.raw}\n`;
           let readable = `${raw}\n **Readable Report**\n`;
@@ -907,21 +916,12 @@ bot.on("message", async msg => {
           functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`);
         }
       })
-    } else {
-      let tafErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`TAF for ${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
-      msg.channel.send(tafErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `);
-    }
   }
 
   if (cmd == `${prefix}notam` || cmd == `${prefix}notams`) {
     if (args.length === 1) return;
 
-    if (icao[ICAO]) {
       notams(`${ICAO}`, {
         format: 'DOMESTIC'
       }).then(result => {
@@ -935,42 +935,54 @@ bot.on("message", async msg => {
           msg.channel.send(notamEmbed);
           functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`);
         } else {
-          let notamErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`NOTAMs for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, NOTAM not found for ${ICAO}.`);
+          if (icao[ICAO]) {
 
-          msg.channel.send(notamErrorEmbed);
-          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`);
+            let notamErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`NOTAMs for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, NOTAM not found for ${ICAO}.`);
+
+            msg.channel.send(notamErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`);
+          } else {
+            let notamErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`NOTAMs for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+      
+            msg.channel.send(notamErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `);
+          }
         }
       });
-    } else {
-      let notamErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`NOTAMs for ${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-
-      msg.channel.send(notamErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `);
-    }
+    
   }
   
   if (cmd == `${prefix}icao`) { 
     if (args.length === 1) return;
 
-    if (icao[ICAO]) {
       let url = avwx + `station/${ICAO}`;
 
       request(url, function (err, response, body) {
         let info = JSON.parse(body);
         if (info.error) {
-          let icaoErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, Information not available for ${ICAO}`);
+          if (icao[ICAO]) {
+            let icaoErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, Information not available for ${ICAO}`);
 
-          msg.channel.send(icaoErrorEmbed);
-          functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`);
+            msg.channel.send(icaoErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`);
+          } else {
+            let icaoErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+      
+            msg.channel.send(icaoErrorEmbed);
+            functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
+          }
         } else {
           let r = info.runways;
           let runways = "";
@@ -1012,15 +1024,7 @@ bot.on("message", async msg => {
             functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
         }
       })
-    } else {
-      let icaoErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-
-      msg.channel.send(icaoErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
-    }
+    
   }
 
   if (cmd == `${prefix}zulu`) {
@@ -1108,7 +1112,6 @@ bot.on("message", async msg => {
   if (cmd == `${prefix}brief`) {
     if (args.length === 1) return;
 
-    if (icao[ICAO]) {
       let metarURL = avwx + `metar/${ICAO}?options=info,translate,speech`;
 			let chartURL = `http://vau.aero/navdb/chart/${ICAO}.pdf`;
 
@@ -1156,26 +1159,28 @@ bot.on("message", async msg => {
             msg.channel.send(briefEmbed);
             functions.logger(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`);
           } else {
-            let briefErrorEmbed = new Discord.RichEmbed()
-              .setTitle(`Briefing for ${ICAO}`)
-              .setColor(errorColor)
-              .setDescription(`${msg.author}, no briefing available for ${ICAO}`)
+            if (icao[ICAO]) {
+              let briefErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Briefing for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, no briefing available for ${ICAO}`)
 
-            msg.channel.send(briefErrorEmbed);
-            functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`);
+              msg.channel.send(briefErrorEmbed);
+              functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`);
+            } else {
+              let briefErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Briefing for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
+            
+              msg.channel.send(briefErrorEmbed);
+              functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `);
+            }
           }
         });
         req.end();
       })
-    } else {
-      let briefErrorEmbed = new Discord.RichEmbed()
-        .setTitle(`Briefing for ${ICAO}`)
-        .setColor(errorColor)
-        .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
     
-      msg.channel.send(briefErrorEmbed);
-      functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `);
-    }
   }
 
   if (cmd == `${prefix}link`) {
