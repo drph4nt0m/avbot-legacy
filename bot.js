@@ -60,7 +60,7 @@ var guildSchema = new mongoose.Schema({
 
 var Guild = mongoose.model('guilds', guildSchema);
 
-const prefix = "!";
+let prefix = "!";
 const successColor = "#1a8fe3";
 const errorColor = "#bf3100";
 const avwx = "https://avwx.rest/api/";
@@ -100,8 +100,8 @@ bot.on("ready", async () => {
   }
 
   Guild.insertMany(guildArray, (err, guilds) => {
-    if(err) console.log(err);
-    else console.log(guilds);
+    // if(err) console.log(err);
+    // else console.log(guilds);
   });
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -251,6 +251,10 @@ bot.on("guildDelete", guild => {
 
 bot.on("message", async msg => {
   if (msg.author.bot) return;
+  
+  let currentGuild = null;
+  currentGuild = await Guild.findOne({guild_id: msg.guild.id});
+  prefix = currentGuild.prefix;
 
   let args = msg.content.split(" ");
   let cmd = args[0].toLowerCase();
@@ -1364,6 +1368,25 @@ bot.on("message", async msg => {
     functions.logger(`info`, `Manually restarted the bot by ${msg.author.tag}`);
   }
 
+  if (cmd == `${prefix}avbotprefix`) {
+    if (!msg.member.hasPermission("ADMINISTRATOR")) {
+      functions.logger(`error`, `${msg.author.tag} tried to change prefix for ${msg.guild.name}`);
+      return;
+    }
+
+    Guild.findOneAndUpdate({guild_id: msg.guild.id}, {prefix: params[0]}, (err, newGuild) => {
+      if(err) console.log(err);
+      else {
+        let prefixEmbed = new Discord.RichEmbed()
+          .setTitle(`AvBot Prefix Changed to \`${params[0]}\``)
+          .setColor(successColor);
+    
+        msg.channel.send(prefixEmbed)
+        functions.logger(`info`, `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`);
+      }
+    })
+  }
+
   // if (cmd == `${prefix}leave`) {
   //   if (msg.author.id !== msg.guild.ownerID || msg.guild.id === process.env.supportServerID) {
   //     functions.logger(`error`, `${msg.author.tag} tried to remove the bot from ${msg.guild.name}`);
@@ -1390,6 +1413,7 @@ bot.on("message", async msg => {
 			.addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
 			.addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
 			.addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
+			.addField(`${prefix}avbotprefix`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
 			.addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
 			.addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
 
