@@ -88,7 +88,7 @@ bot.on("ready", () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   functions.logger(`info`, `AvBot v2 is online`);
 
-  console.log(bot.guilds.map(e => e.id));
+  console.log(bot.guilds.map(e => e.id).length);
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
