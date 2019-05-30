@@ -52,8 +52,10 @@ app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 mongoose.connect(process.env.mLab, {useNewUrlParser: true});
 
 var guildSchema = new mongoose.Schema({
-  guild_id  : {type: String, unique: true},
-  prefix    : { type: String, default: '!' }
+  guild_id    : {type: String, unique: true},
+  guild_name  : String,
+  prefix      : { type: String, default: '!' },
+  language    : { type: String, default: 'english' }
 });
 
 var Guild = mongoose.model('guilds', guildSchema);
@@ -88,12 +90,18 @@ bot.on("ready", async () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   functions.logger(`info`, `AvBot v2 is online`);
 
-  let guildArray = bot.guilds.map(e => e.id);
-  for(let i = 0; i < guildArray.length; i++) {
-    guildArray[i] = {guild_id: guildArray[i]}
+  let guildIds = bot.guilds.map(e => e.id);
+  let guildNames = bot.guilds.map(e => e.name);
+  
+  let guildArray = [];
+
+  for(let i = 0; i < guildIds.length; i++) {
+    guildArray.push({guild_id: guildIds[i], guild_name: guildNames[i]});
   }
+
   Guild.insertMany(guildArray, (err, guilds) => {
-    console.log(guilds);
+    if(err) console.log(err);
+    else console.log(guilds);
   });
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -213,6 +221,11 @@ bot.on("guildCreate", guild => {
   bot.channels
     .find(channel => channel.id === process.env.GuildsChannel)
     .send(newGuildEmbed);
+  
+  Guild.create({guild_id: guild.id, guild_name: guild.name}, (err, guild) => {
+    if(err) console.log(err);
+    else console.log(guild);
+  });
 });
 
 bot.on("guildDelete", guild => {
