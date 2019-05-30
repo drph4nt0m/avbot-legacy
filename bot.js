@@ -52,8 +52,8 @@ app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 mongoose.connect(process.env.mLab, {useNewUrlParser: true});
 
 var guildSchema = new mongoose.Schema({
-  guild_id  : String,
-  prefix    : {type: String, default: '!'}
+  guild_id  : {type: String, unique: true},
+  prefix    : { type: String, default: '!' }
 });
 
 var Guild = mongoose.model('guilds', guildSchema);
