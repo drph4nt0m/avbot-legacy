@@ -1,11 +1,12 @@
 const Discord = require("discord.js");
 const express = require("express");
+const mongoose = require('mongoose');
+const request = require("request");
+const http = require("http");
 const dotenv = require("dotenv");
-const fs = require("fs");
 const inly = require("inly");
 const path = require("path");
-const http = require("http");
-const request = require("request");
+const fs = require("fs");
 const DBL = require("dblapi.js");
 
 const icao = require("icao");
@@ -24,28 +25,38 @@ app.get("/", (req, res) => {
 
 app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 
-const logger = winston.createLogger({
-  level: "info",
-  exitOnError: false,
-  format: winston.format.combine(
-    winston.format.timestamp({
-      format: "YYYY-MM-DD HH:mm:ss"
-    }),
-    winston.format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
-  ),
-  transports: [
-    new winston.transports.Console({
-      level: "info",
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
-      )
-    }),
-    new winston.transports.File({
-      filename: "log"
-    })
-  ]
+// const logger = winston.createLogger({
+//   level: "info",
+//   exitOnError: false,
+//   format: winston.format.combine(
+//     winston.format.timestamp({
+//       format: "YYYY-MM-DD HH:mm:ss"
+//     }),
+//     winston.format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
+//   ),
+//   transports: [
+//     new winston.transports.Console({
+//       level: "info",
+//       format: winston.format.combine(
+//         winston.format.colorize(),
+//         winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+//       )
+//     }),
+//     new winston.transports.File({
+//       filename: "log"
+//     })
+//   ]
+// });
+
+
+mongoose.connect(process.env.mLab, {useNewUrlParser: true});
+
+var guildSchema = new mongoose.Schema({
+  guild_id  : String,
+  prefix    : {type: String, default: '!'}
 });
+
+var Guild = mongoose.model('URL', guildSchema);
 
 const prefix = "!";
 const successColor = "#1a8fe3";
@@ -65,7 +76,6 @@ const administrativeRatings = ['Suspended', 'Observer', 'User', '', '', '', '', 
 const atcRatings = ['', 'Observer', 'AS1', 'AS2', 'AS3', 'ADC', 'APC', 'ACC', 'SEC', 'SAI', 'CAI'];
 
 const bot = new Discord.Client();
-
 const dbl = new DBL(process.env.dblToken, bot);
 
 bot.on("error", e => functions.logger(`error`, e));
@@ -77,6 +87,8 @@ dbl.on('error', e => functions.logger(`error`, `${e}`));
 bot.on("ready", () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   functions.logger(`info`, `AvBot v2 is online`);
+
+  console.log(bot.guilds.map(e => e.id));
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
