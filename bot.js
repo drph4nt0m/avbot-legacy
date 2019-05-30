@@ -56,7 +56,7 @@ var guildSchema = new mongoose.Schema({
   prefix    : {type: String, default: '!'}
 });
 
-var Guild = mongoose.model('URL', guildSchema);
+var Guild = mongoose.model('guilds', guildSchema);
 
 const prefix = "!";
 const successColor = "#1a8fe3";
@@ -84,11 +84,17 @@ bot.on("warn", e => functions.logger(`warn`, e));
 dbl.on('posted', () => functions.logger('info', 'Server count posted!'));
 dbl.on('error', e => functions.logger(`error`, `${e}`));
 
-bot.on("ready", () => {
+bot.on("ready", async () => {
   let start_time = moment.tz(bot.readyAt, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   functions.logger(`info`, `AvBot v2 is online`);
 
-  console.log(bot.guilds.map(e => e.id).length);
+  let guildArray = bot.guilds.map(e => e.id);
+  for(let i = 0; i < guildArray.length; i++) {
+    guildArray[i] = {guild_id: guildArray[i]}
+  }
+  Guild.insertMany(guildArray, (err, guilds) => {
+    console.log(guilds);
+  });
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
