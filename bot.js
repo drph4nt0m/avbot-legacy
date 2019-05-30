@@ -1413,7 +1413,7 @@ bot.on("message", async msg => {
 			.addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
 			.addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
 			.addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
-			.addField(`${prefix}avbotprefix`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
+			.addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
 			.addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
 			.addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
 
