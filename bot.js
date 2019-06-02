@@ -197,7 +197,7 @@ bot.on("guildCreate", guild => {
     .setTitle(`Hello ${guild.name} and thank you for choosing AvBot`)
     .setColor(successColor)
     .setDescription(`If you need any help regarding AvBot or have any suggestions join our [AvBot Support Server](${process.env.AvBotSupportServer}). To get started try ${prefix}help.`)
-    .setFooter(`regards targaryen#6615`);
+    .setFooter(`regards Rahul Singh#6615`);
 
   guild.channels
     .filter(c => c.type === "text")
@@ -1385,6 +1385,31 @@ bot.on("message", async msg => {
         functions.logger(`info`, `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`);
       }
     })
+  }
+
+  if (cmd == `${prefix}broadcast`) {
+    if (msg.author.id !== process.env.myID) {
+      functions.logger(`error`, `${msg.author.tag} tried to broadcast a message.`);
+      return;
+    }
+    let broadcastEmbed = new Discord.RichEmbed()
+      .setTitle(`AvBot`)
+      .setColor(successColor)
+      .setDescription(params.join(" "))
+      .setFooter(`regards Rahul Singh#6615`);
+
+    let count = 0;
+    bot.guilds.forEach(guild => {
+      let channels = guild.channels.filter(c => c.type === "text");
+      channels.forEach(channel => {
+        channel.members.forEach(member => {
+          if(bot.user.id == member.user.id) {
+            channel.send(broadcastEmbed);
+          }
+        })
+      });
+    })
+    functions.logger(`info`, `Broadcast message sent by ${msg.author.tag}`);
   }
 
   // if (cmd == `${prefix}leave`) {
