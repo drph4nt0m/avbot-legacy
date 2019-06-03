@@ -55,12 +55,13 @@ var guildSchema = new mongoose.Schema({
   guild_id    : {type: String, unique: true},
   guild_name  : String,
   prefix      : { type: String, default: '!' },
-  language    : { type: String, default: 'english' }
+  language    : { type: String, default: 'en' }
 });
 
 var Guild = mongoose.model('guilds', guildSchema);
 
 let prefix = "!";
+let language = "english";
 const successColor = "#1a8fe3";
 const errorColor = "#bf3100";
 const avwx = "https://avwx.rest/api/";
@@ -103,6 +104,10 @@ bot.on("ready", async () => {
     // if(err) console.log(err);
     // else console.log(guilds);
   });
+
+  Guild.updateMany({}, {language: 'en'}, (err, guilds) => {
+    if(err) console.log(err);
+  })
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
@@ -715,7 +720,7 @@ bot.on("message", async msg => {
               }
             })
           } else {
-            
+
             if (icao[ICAO]) {
               let chartErrorEmbed = new Discord.RichEmbed()
                 .setTitle(`Chart for ${ICAO}`)
