@@ -270,7 +270,7 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
   
-  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}help`) {
+  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
@@ -671,47 +671,70 @@ bot.on("message", async msg => {
           }
         } else {
 
-          request(`https://avbotserver4.herokuapp.com/chart/${ICAO}`, (err, res2, body) => {
-						if (res2.statusCode == 200) {
-							let chartsWebsiteLink2 = `https://avbotserver4.herokuapp.com/chart/${ICAO}`;
-							let chartsEmbed = new Discord.RichEmbed()
-                .setTitle(`Chart for ${ICAO}`)
-                .setColor(successColor)
-                .setDescription(`[Click here for ${ICAO} Charts](${chartsWebsiteLink2})`)
-                .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
+          if(ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
 
-              msg.author.send(chartsEmbed);
-              functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
-
-              if (msg.guild != null) {
-                chartsEmbed = new Discord.RichEmbed()
+            request(`https://avbotserver4.herokuapp.com/chart/${ICAO}`, (err, res2, body) => {
+              if (res2.statusCode == 200) {
+                let chartsWebsiteLink2 = `https://avbotserver4.herokuapp.com/chart/${ICAO}`;
+                let chartsEmbed = new Discord.RichEmbed()
                   .setTitle(`Chart for ${ICAO}`)
                   .setColor(successColor)
-                  .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
-
-                msg.channel.send(chartsEmbed);
-              }
-            } else {
-
-              if (icao[ICAO]) {
-                let chartErrorEmbed = new Discord.RichEmbed()
-                  .setTitle(`Chart for ${ICAO}`)
-                  .setColor(errorColor)
-                  .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
+                  .setDescription(`[Click here for ${ICAO} Charts](${chartsWebsiteLink2})`)
+                  .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
   
-                msg.channel.send(chartErrorEmbed);
-                functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+                msg.author.send(chartsEmbed);
+                functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+  
+                if (msg.guild != null) {
+                  chartsEmbed = new Discord.RichEmbed()
+                    .setTitle(`Chart for ${ICAO}`)
+                    .setColor(successColor)
+                    .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
+  
+                  msg.channel.send(chartsEmbed);
+                }
               } else {
-                let chartErrorEmbed = new Discord.RichEmbed()
-                  .setTitle(`Chart for ${ICAO}`)
-                  .setColor(errorColor)
-                  .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-          
-                msg.channel.send(chartErrorEmbed);
-                functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
+  
+                if (icao[ICAO]) {
+                  let chartErrorEmbed = new Discord.RichEmbed()
+                    .setTitle(`Chart for ${ICAO}`)
+                    .setColor(errorColor)
+                    .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
+    
+                  msg.channel.send(chartErrorEmbed);
+                  functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+                } else {
+                  let chartErrorEmbed = new Discord.RichEmbed()
+                    .setTitle(`Chart for ${ICAO}`)
+                    .setColor(errorColor)
+                    .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+            
+                  msg.channel.send(chartErrorEmbed);
+                  functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
+                }
               }
+            })
+          } else {
+            
+            if (icao[ICAO]) {
+              let chartErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Chart for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
+
+              msg.channel.send(chartErrorEmbed);
+              functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
+            } else {
+              let chartErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Chart for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+        
+              msg.channel.send(chartErrorEmbed);
+              functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
             }
-          })
+          }
+
         }
       });
       req.end();
@@ -1409,7 +1432,7 @@ bot.on("message", async msg => {
         })
       });
     })
-    functions.logger(`info`, `Broadcast message sent by ${msg.author.tag}`);
+    functions.logger(`info`, `Broadcast message \`\`\`${params.join(" ")}\`\`\` sent by ${msg.author.tag}`);
   }
 
   // if (cmd == `${prefix}leave`) {
