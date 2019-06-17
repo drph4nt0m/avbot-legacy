@@ -263,8 +263,8 @@ bot.on("message", async msg => {
   currentGuild = await Guild.findOne({guild_id: msg.guild.id});
   prefix = currentGuild.prefix;
   language = currentGuild.language;
-  routeAllowed = currentGuild.route.allowed;
-  console.log(routeAllowed);
+  // routeAllowed = currentGuild.route.allowed;
+  // console.log(routeAllowed);
 
   let args = msg.content.split(" ");
   let cmd = args[0].toLowerCase();
