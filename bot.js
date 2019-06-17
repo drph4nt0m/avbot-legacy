@@ -106,17 +106,17 @@ bot.on("ready", async () => {
 
   Guild.insertMany(guildArray, (err, guilds) => { });
 
-  // Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
-  //   console.log(err);
-  // });
+  Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
+    console.log(err);
+  });
 
-  Guild.collection.update({},
-    {$unset: {routeAccess: true}},
-    {multi: true, safe: true},
-    (err, guilds) => {
-      console.log(err);
-    }
-  );
+  // Guild.collection.update({},
+  //   {$unset: {routeAccess: true}},
+  //   {multi: true, safe: true},
+  //   (err, guilds) => {
+  //     console.log(err);
+  //   }
+  // );
 
   
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
