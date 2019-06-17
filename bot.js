@@ -55,13 +55,17 @@ var guildSchema = new mongoose.Schema({
   guild_id    : {type: String, unique: true},
   guild_name  : String,
   prefix      : { type: String, default: '!' },
-  language    : { type: String, default: 'en' }
+  language    : { type: String, default: 'en' },
+  routeAccess : {
+    allowed: {type: Boolean, default: false},
+    till: Date
+  }
 });
 
 var Guild = mongoose.model('guilds', guildSchema);
 
 let prefix = "!";
-let language = "english";
+let language = "en";
 const successColor = "#1a8fe3";
 const errorColor = "#bf3100";
 const avwx = "https://avwx.rest/api/";
@@ -100,14 +104,12 @@ bot.on("ready", async () => {
     guildArray.push({guild_id: guildIds[i], guild_name: guildNames[i]});
   }
 
-  Guild.insertMany(guildArray, (err, guilds) => {
-    // if(err) console.log(err);
-    // else console.log(guilds);
-  });
+  Guild.insertMany(guildArray, (err, guilds) => { });
 
-  Guild.updateMany({}, {language: 'en'}, (err, guilds) => {
-    if(err) console.log(err);
-  })
+  Guild.updateMany({}, {routeAccess: {allowed: false}}, (err, guilds) => {
+    console.log(err);
+    console.log(guilds);
+  });
 
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
@@ -234,7 +236,7 @@ bot.on("guildCreate", guild => {
 });
 
 bot.on("guildDelete", guild => {
-  functions.logger(`info`, `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
+  functions.logger(`info`, `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild removed had ${guild.memberCount} members!`);
 
   let time_join = moment.tz(guild.joined_at, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   let owner = bot.users.find(user => user.id === guild.ownerID);
@@ -247,7 +249,7 @@ bot.on("guildDelete", guild => {
     .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
     .addField(`Members`, `${guild.memberCount}`)
     .addField(`Region`, `${guild.region}`)
-    .setFooter(`Joined at ${time_join}`);
+    .setFooter(`Removed at ${time_join}`);
 
   bot.channels
     .find(channel => channel.id === process.env.GuildsChannel)
@@ -260,6 +262,9 @@ bot.on("message", async msg => {
   let currentGuild = null;
   currentGuild = await Guild.findOne({guild_id: msg.guild.id});
   prefix = currentGuild.prefix;
+  language = currentGuild.language;
+  routeAllowed = currentGuild.route.allowed;
+  console.log(routeAllowed);
 
   let args = msg.content.split(" ");
   let cmd = args[0].toLowerCase();
@@ -275,11 +280,11 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
   
-  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
+  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}avbotprefix` || cmd == `${prefix}avbotlanguage` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
-  
+
   if (cmd == `${prefix}ivao`) {
 
 		if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
@@ -1397,7 +1402,9 @@ bot.on("message", async msg => {
   }
 
   if (cmd == `${prefix}avbotprefix`) {
-    if (!msg.member.hasPermission("ADMINISTRATOR")) {
+    if (args.length === 1) return;
+
+    if (!msg.member.hasPermission("ADMINISTRATOR") && msg.author.id !== process.env.myID) {
       functions.logger(`error`, `${msg.author.tag} tried to change prefix for ${msg.guild.name}`);
       return;
     }
@@ -1413,6 +1420,39 @@ bot.on("message", async msg => {
         functions.logger(`info`, `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`);
       }
     })
+  }
+
+  if (cmd == `${prefix}avbotlanguage`) {
+    if (args.length === 1) return;
+
+    if (!msg.member.hasPermission("ADMINISTRATOR") && msg.author.id !== process.env.myID) {
+      functions.logger(`error`, `${msg.author.tag} tried to change language for ${msg.guild.name}`);
+      return;
+    }
+
+    if(params[0].toLowerCase() == 'en' || params[0].toLowerCase() == 'pl') {
+
+      Guild.findOneAndUpdate({guild_id: msg.guild.id}, {language: params[0].toLowerCase()}, (err, newGuild) => {
+        if(err) console.log(err);
+        else {
+          let languageEmbed = new Discord.RichEmbed()
+            .setTitle(`AvBot Language Changed to \`${params[0].toUpperCase()}\``)
+            .setColor(successColor);
+      
+          msg.channel.send(languageEmbed)
+          functions.logger(`info`, `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${msg.author.tag}`);
+        }
+      })
+    } else {
+      let languageEmbed = new Discord.RichEmbed()
+        .setTitle(`AvBot`)
+        .setDescription(`AvBot currently supports\n -> English [en] \n-> Polish [pl] \n\nIf you want to help in translating into other languages please [join our support server](${process.env.AvBotSupportServer}).`)
+        .setColor(successColor);
+
+      msg.channel.send(languageEmbed)
+      functions.logger(`info`, `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${msg.author.tag}`);
+    }
+
   }
 
   if (cmd == `${prefix}broadcast`) {
@@ -1450,29 +1490,59 @@ bot.on("message", async msg => {
   // }
 
 
-  if (cmd == `${prefix}help`) {
+  if(language === 'en') {
 
-		let helpEmbed = new Discord.RichEmbed()
-			.setTitle('AvBot to the rescue!')
-			.setColor(successColor)
-			.addField(`${prefix}help`, `This command...`)
-			.addField(`${prefix}chart [ICAO]`, `Example \”${prefix}chart VABB\". Gives you the latest chart of the chosen airport.`)
-			.addField(`${prefix}metar [ICAO]`, `Example \"${prefix}metar VABB\". Gives you live METAR of the chosen airport.`)
-			.addField(`${prefix}taf [ICAO]`, `Example \"${prefix}taf VABB\". Gives you live TAF of the chosen airport.`)
-			.addField(`${prefix}notam [ICAO]`, `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`, true)
-			.addField(`${prefix}brief [ICAO]`, `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`)
-			.addField(`${prefix}icao [ICAO]`, `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`)
-			.addField(`${prefix}ivao [CALLSIGN]`, `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`)
-			.addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
-			.addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
-			.addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
-			.addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
-			.addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
-			.addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
+    if (cmd == `${prefix}help`) {
+  
+      let helpEmbed = new Discord.RichEmbed()
+        .setTitle('AvBot to the rescue!')
+        .setColor(successColor)
+        .addField(`${prefix}help`, `This command...`)
+        .addField(`${prefix}chart [ICAO]`, `Example \”${prefix}chart VABB\". Gives you the latest chart of the chosen airport.`)
+        .addField(`${prefix}metar [ICAO]`, `Example \"${prefix}metar VABB\". Gives you live METAR of the chosen airport.`)
+        .addField(`${prefix}taf [ICAO]`, `Example \"${prefix}taf VABB\". Gives you live TAF of the chosen airport.`)
+        .addField(`${prefix}notam [ICAO]`, `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`)
+        .addField(`${prefix}brief [ICAO]`, `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`)
+        .addField(`${prefix}icao [ICAO]`, `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`)
+        .addField(`${prefix}ivao [CALLSIGN]`, `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`)
+        .addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
+        .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
+        .addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
+        .addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
+        .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
+        .addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
+  
+      msg.channel.send(helpEmbed);
+      functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
+    }
+  }
 
-    msg.channel.send(helpEmbed);
-    functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
-	}
+  if(language === 'pl') {
+
+    if (cmd == `${prefix}help`) {
+  
+      let helpEmbed = new Discord.RichEmbed()
+        .setTitle('AvBot na ratunek!')
+        .setColor(successColor)
+        .addField(`${prefix}help`, `Ta komenda...`)
+        .addField(`${prefix}chart [ICAO]`, `Przykład \"${prefix}chart EPWA\". Podaje chart wybranego lotniska.`)
+        .addField(`${prefix}metar [ICAO]`, `Przykład \"${prefix}metar EPWA\". Podaje METAR wybranego lotniska.`)
+        .addField(`${prefix}taf [ICAO]`, `Przykład \"${prefix}taf EPWA\". Podaje live TAF wybranego lotniska.`)
+        .addField(`${prefix}notam [ICAO]`, `Przykład \"${prefix}notam EPWA\". Podaje NOTAMy wybranego lotniska.`)
+        .addField(`${prefix}brief [ICAO]`, `Przykład \"${prefix}brief EPWA\". Podaje METAR, TAF i najnowszy chart wybranego lotniska.`)
+        .addField(`${prefix}icao [ICAO]`, `Przykład \"${prefix}icao EPWA\". Podaje informacje na temat wybranego lotniska.`)
+        .addField(`${prefix}ivao [CALLSIGN]`, `Przykład \"${prefix}ivao LOT001\" or \"${prefix}ivao EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci IVAO.`)
+        .addField(`${prefix}online [FIR]`, `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`)
+        .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
+        .addField(`${prefix}zulu [ICAO] [Czas Lokalny]`, `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`)
+        .addField(`${prefix}avbotprefix [NOWY_PREFIX]`, `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`)
+        .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
+        .addField(`${prefix}invite`, `Podaje link do dołączenia do naszego serwera supportu AvBota.`)
+  
+      msg.channel.send(helpEmbed);
+      functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
+    }
+  }
 });
 
 bot.login(process.env.token);
