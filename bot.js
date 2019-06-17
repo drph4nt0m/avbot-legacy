@@ -56,7 +56,7 @@ var guildSchema = new mongoose.Schema({
   guild_name  : String,
   prefix      : { type: String, default: '!' },
   language    : { type: String, default: 'en' },
-  routeAccess : {
+  premium : {
     allowed: {type: Boolean, default: false},
     till: Date
   }
@@ -106,11 +106,19 @@ bot.on("ready", async () => {
 
   Guild.insertMany(guildArray, (err, guilds) => { });
 
-  Guild.updateMany({}, {routeAccess: {allowed: false}}, (err, guilds) => {
-    console.log(err);
-    console.log(guilds);
-  });
+  // Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
+  //   console.log(err);
+  // });
 
+  Guild.collection.update({},
+    {$unset: {routeAccess: true}},
+    {multi: true, safe: true},
+    (err, guilds) => {
+      console.log(err);
+    }
+  );
+
+  
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
           ____                 _______                 __       __         __   _____                                          
@@ -263,8 +271,7 @@ bot.on("message", async msg => {
   currentGuild = await Guild.findOne({guild_id: msg.guild.id});
   prefix = currentGuild.prefix;
   language = currentGuild.language;
-  // routeAllowed = currentGuild.route.allowed;
-  // console.log(routeAllowed);
+  // routeAllowed = currentGuild.premium.allowed;
 
   let args = msg.content.split(" ");
   let cmd = args[0].toLowerCase();
@@ -280,10 +287,9 @@ bot.on("message", async msg => {
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
   
-  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}avbotprefix` || cmd == `${prefix}avbotlanguage` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
+  if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief`  || cmd == `${prefix}route` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}avbotprefix` || cmd == `${prefix}avbotlanguage` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
-
 
   if (cmd == `${prefix}ivao`) {
 
@@ -523,7 +529,6 @@ bot.on("message", async msg => {
 			});
 		}
   }
-  
 
   if (cmd == `${prefix}online`) {
     FIR = ICAO.substring(0,2);
@@ -649,7 +654,6 @@ bot.on("message", async msg => {
 		}
 	}
 
-
   if (cmd == `${prefix}chart` || cmd == `${prefix}charts`) {
     if (args.length === 1) return;
     
@@ -750,7 +754,6 @@ bot.on("message", async msg => {
       req.end();
     
   }
-
 
   if (cmd == `${prefix}metar`) {
     if (args.length === 1) return;
