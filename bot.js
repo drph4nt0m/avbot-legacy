@@ -69,6 +69,7 @@ let language = "en";
 const successColor = "#1a8fe3";
 const errorColor = "#bf3100";
 const avwx = "https://avwx.rest/api/";
+const routeAPI = "https://api.flightplandatabase.com";
 
 const cwd = process.cwd();
 const name = 'whazzup.txt.gz';
@@ -106,9 +107,9 @@ bot.on("ready", async () => {
 
   Guild.insertMany(guildArray, (err, guilds) => { });
 
-  Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
-    console.log(err);
-  });
+  // Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
+  //   console.log(err);
+  // });
 
   // Guild.collection.update({},
   //   {$unset: {routeAccess: true}},
@@ -271,7 +272,7 @@ bot.on("message", async msg => {
   currentGuild = await Guild.findOne({guild_id: msg.guild.id});
   prefix = currentGuild.prefix;
   language = currentGuild.language;
-  // routeAllowed = currentGuild.premium.allowed;
+  premium = currentGuild.premium;
 
   let args = msg.content.split(" ");
   let cmd = args[0].toLowerCase();
@@ -1273,6 +1274,110 @@ bot.on("message", async msg => {
     
   }
 
+  if (cmd == `${prefix}route`) {
+    if (premium.allowed) {
+      if (new Date < premium.till) {
+        if (params.length == 2) {
+          let from = params[0].toUpperCase();
+          let to = params[1].toUpperCase();
+          request(`${routeAPI}/search/plans?fromICAO=${from}&toICAO=${to}&limit=1`, function (err, response, body) {
+            if(JSON.parse(body).length == 0) {
+              let routeErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Route: ${from} ${to}`)
+                .setColor(errorColor)
+                .setDescription(`Unable to fetch route for ${from}-${to}`)
+                
+              msg.channel.send(routeErrorEmbed);
+              functions.logger(`error`, `${from} ${to} route requested by ${msg.author.tag} was not available.`);
+            } else {
+              let id = JSON.parse(body)[0].id;
+              request(`${routeAPI}/plan/${id}`, function (err, response, body) {
+                let route = [];
+                let nodes = JSON.parse(body).route.nodes;
+                nodes = nodes.filter(e => {
+                  return (
+                    e.type === 'APT' ||
+                    e.type === 'VOR' ||
+                    e.type === 'DME' ||
+                    e.type === 'FIX'
+                  );
+                });
+                let previous = null;
+                let previousVOR = null;
+                nodes.forEach(node => {
+                  if (node.type === 'FIX') {
+                    if (node.via && node.via.ident === previous && !previousVOR) {
+                      route.pop();
+                      route.push(node);
+                    } else if (node.via) {
+                      route.push({ ident: node.via.ident, type: 'path' });
+                      route.push(node);
+                      previous = node.via.ident;
+                    } else {
+                      route.push(node);
+                    }
+                    previousVOR = null;
+                  } else if (previousVOR !== node.name) {
+                    if (node.via && node.via.ident === previous) {
+                      route.pop();
+                      route.push(node);
+                    } else if (node.via) {
+                      route.push({ ident: node.via.ident, type: 'path' });
+                      route.push(node);
+                    } else {
+                      route.push(node);
+                    }
+                    previousVOR = node.name;
+                  }
+                });
+                let message = '';
+                route.forEach(node => {
+                  if(node.type != 'path') {
+                    message += `**${node.ident}** `;
+                  } else {
+                    message += `${node.ident} `;
+                  }
+                });
+                let routeEmbed = new Discord.RichEmbed()
+                .setTitle(`Route: ${from} ${to}`)
+                .setColor(successColor)
+                .setDescription(message)
+                .setFooter(`This is not a source for official briefing. Please obtain a briefing from the appropriate agency `);
+                
+              msg.channel.send(routeEmbed);
+              functions.logger(`info`, `${from}-${to} route sent to ${msg.author.tag}`);
+              });
+            }
+          });
+        } else {
+          let routeErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`Route`)
+            .setColor(errorColor)
+            .setDescription(`Invalid Arguments\nFollow ${prefix}route [FROM-ICAO] [TO-ICAO]`)
+            
+          msg.channel.send(routeErrorEmbed);
+          functions.logger(`error`, `${from} ${to} route with invalid arguments requested by ${msg.author.tag}`);
+        }
+      } else {
+        let routeErrorEmbed = new Discord.RichEmbed()
+        .setTitle(`Route`)
+        .setColor(errorColor)
+        .setDescription(`Your premium subscription has expired. To know more join our [Support Server](${process.env.AvBotSupportServer})`)
+        
+      msg.channel.send(routeErrorEmbed);
+      functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route) [EXPIRED].`);
+      }
+    } else {
+      let routeErrorEmbed = new Discord.RichEmbed()
+        .setTitle(`Route`)
+        .setColor(errorColor)
+        .setDescription(`This is a premium only feature. To know more join our [Support Server](${process.env.AvBotSupportServer})`)
+        
+      msg.channel.send(routeErrorEmbed);
+      functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route).`);
+    }
+  }
+
   if (cmd == `${prefix}link`) {
     var inviteURL = `https://discordapp.com/oauth2/authorize?client_id=${bot.user.id}&scope=bot&permissions=251904`;
 
@@ -1481,6 +1586,24 @@ bot.on("message", async msg => {
       });
     })
     functions.logger(`info`, `Broadcast message \`\`\`${params.join(" ")}\`\`\` sent by ${msg.author.tag}`);
+  }
+
+  if(cmd == `${prefix}premium`) {
+    if (msg.author.id !== process.env.myID) {
+      functions.logger(`error`, `${msg.author.tag} tried to add a server to premium.`);
+      return;
+    }
+    let date = new Date();
+    date.setDate(date.getDate() + 30);
+    Guild.updateOne({guild_id: params[0]}, {premium: {allowed: true, till: date}}, (err, guilds) => { });
+    let premiumGuild = await Guild.findOne({guild_id: params[0]});
+    let premiumEmbed = new Discord.RichEmbed()
+      .setTitle(`AvBot Premium activated for ${premiumGuild.guild_name} [${params[0]}]`)
+      .setColor(successColor)
+      .setFooter(`Valid till ${date}`);
+
+    msg.channel.send(premiumEmbed)
+    functions.logger(`info`, `AvBot Premium activated for ${premiumGuild.guild_name} by ${msg.author.tag}`);
   }
 
   // if (cmd == `${prefix}leave`) {
