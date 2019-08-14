@@ -666,7 +666,7 @@ bot.on("message", async msg => {
       };
 
       let req = http.request(options, function (res) {
-        if (res.statusCode == 200) {
+        if (res.statusCode == 200 || res.statusCode == 302 || res.statusCode != 404) {
           let chartsEmbed = new Discord.RichEmbed()
             .setTitle(`Chart for ${ICAO}`)
             .setColor(successColor)
@@ -685,6 +685,7 @@ bot.on("message", async msg => {
             msg.channel.send(chartsEmbed);
           }
         } else {
+          console.log(res.body, res.statusCode);
 
           if(ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
 
