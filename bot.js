@@ -658,15 +658,18 @@ bot.on("message", async msg => {
   if (cmd == `${prefix}chart` || cmd == `${prefix}charts`) {
     if (args.length === 1) return;
     
-      let options = {
-        method: "HEAD",
-        host: "vau.aero",
-        port: 80,
-        path: `/navdb/chart/${ICAO}.pdf`
-      };
+      // let options = {
+      //   method: "GET",
+      //   host: "vau.aero",
+      //   port: 80,
+      //   path: `/navdb/chart/${ICAO}.pdf`
+      // };
 
-      let req = http.request(options, function (res) {
-        if (res.statusCode == 200 || res.statusCode == 302 || res.statusCode != 404) {
+      // let req = http.request(options, function (res) {
+      request(`https://vau.aero/navdb/chart/${ICAO}.pdf`, (err, res, body) => {
+        console.log(res.statusCode);
+        // console.log(body);
+        if (res.statusCode != 404) {
           let chartsEmbed = new Discord.RichEmbed()
             .setTitle(`Chart for ${ICAO}`)
             .setColor(successColor)
@@ -685,7 +688,6 @@ bot.on("message", async msg => {
             msg.channel.send(chartsEmbed);
           }
         } else {
-          console.log(res.body, res.statusCode);
 
           if(ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
 
@@ -753,7 +755,7 @@ bot.on("message", async msg => {
 
         }
       });
-      req.end();
+      // req.end();
     
   }
 
