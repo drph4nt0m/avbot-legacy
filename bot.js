@@ -209,6 +209,10 @@ bot.on("ready", async () => {
 bot.on("guildCreate", guild => {
   functions.logger(`info`, `New guild added ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`);
 
+  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+    type: "WATCHING"
+  });
+
   let welcomeEmbed = new Discord.RichEmbed()
     .setTitle(`Hello ${guild.name} and thank you for choosing AvBot`)
     .setColor(successColor)
@@ -246,6 +250,10 @@ bot.on("guildCreate", guild => {
 
 bot.on("guildDelete", guild => {
   functions.logger(`info`, `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild removed had ${guild.memberCount} members!`);
+
+  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+    type: "WATCHING"
+  });
 
   let time_join = moment.tz(guild.joined_at, "Asia/Kolkata").format("YYYY-MM-DD HH:mm:ss");
   let owner = bot.users.find(user => user.id === guild.ownerID);
