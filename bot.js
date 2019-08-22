@@ -143,7 +143,7 @@ bot.on("ready", async () => {
     .send(restartEmbed);
 
   bot.user.setStatus("online");
-  bot.user.setActivity(`${prefix}help`, {
+  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
     type: "WATCHING"
   });
 
@@ -689,15 +689,21 @@ bot.on("message", async msg => {
           }
         } else {
 
-          if(ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
-
-            request(`https://avbotserver4.herokuapp.com/chart/${ICAO}`, (err, res2, body) => {
+          if(ICAO[0] == 'N' || ICAO[0] == 'O' || ICAO[0] == 'P' || ICAO[0] == 'S' || ICAO[0] == 'T' || ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
+            console.log("Hello");
+            let avBotChartURL = '';
+            if(ICAO[0] == 'N' || ICAO[0] == 'O' || ICAO[0] == 'P' || ICAO[0] == 'S' || ICAO[0] == 'T') {
+              avBotChartURL = `https://avbotserver3.herokuapp.com/chart/${ICAO}`;
+            } else if(ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
+              avBotChartURL = `https://avbotserver4.herokuapp.com/chart/${ICAO}`;
+            }
+            request(avBotChartURL, (err, res2, body) => {
               if (res2.statusCode == 200) {
-                let chartsWebsiteLink2 = `https://avbotserver4.herokuapp.com/chart/${ICAO}`;
+                console.log("Hello2");
                 let chartsEmbed = new Discord.RichEmbed()
                   .setTitle(`Chart for ${ICAO}`)
                   .setColor(successColor)
-                  .setDescription(`[Click here for ${ICAO} Charts](${chartsWebsiteLink2})`)
+                  .setDescription(`[Click here for ${ICAO} Charts](${avBotChartURL})`)
                   .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
   
                 msg.author.send(chartsEmbed);
