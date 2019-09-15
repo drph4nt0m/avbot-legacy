@@ -295,7 +295,7 @@ bot.on("message", async msg => {
 	let timeform = time.format('YYYY-MM-DD HH:mm:ss Z');
 	let timeform2 = time.format('HH:mm:ss');
   let timeform3 = time.format('DD/MM HH:mm');
-  
+
   if(cmd == `${prefix}ivao` || cmd == `${prefix}online` || cmd == `${prefix}chart` || cmd == `${prefix}charts` || cmd == `${prefix}metar` || cmd == `${prefix}taf` || cmd == `${prefix}notam` || cmd == `${prefix}notams` || cmd == `${prefix}icao` || cmd == `${prefix}zulu` || cmd == `${prefix}brief`  || cmd == `${prefix}route` || cmd == `${prefix}link` || cmd == `${prefix}invite` || cmd == `${prefix}guild` || cmd == `${prefix}guilds` || cmd == `${prefix}purge` || cmd == `${prefix}uptime` || cmd == `${prefix}ping` || cmd == `${prefix}restart` || cmd == `${prefix}avbotprefix` || cmd == `${prefix}avbotlanguage` || cmd == `${prefix}broadcast` || cmd == `${prefix}help`) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
@@ -665,18 +665,8 @@ bot.on("message", async msg => {
 
   if (cmd == `${prefix}chart` || cmd == `${prefix}charts`) {
     if (args.length === 1) return;
-    
-      // let options = {
-      //   method: "GET",
-      //   host: "vau.aero",
-      //   port: 80,
-      //   path: `/navdb/chart/${ICAO}.pdf`
-      // };
 
-      // let req = http.request(options, function (res) {
       request(`https://vau.aero/navdb/chart/${ICAO}.pdf`, (err, res, body) => {
-        console.log(res.statusCode);
-        // console.log(body);
         if (res.statusCode != 404) {
           let chartsEmbed = new Discord.RichEmbed()
             .setTitle(`Chart for ${ICAO}`)
@@ -698,7 +688,6 @@ bot.on("message", async msg => {
         } else {
 
           if(ICAO[0] == 'N' || ICAO[0] == 'O' || ICAO[0] == 'P' || ICAO[0] == 'S' || ICAO[0] == 'T' || ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
-            console.log("Hello");
             let avBotChartURL = '';
             if(ICAO[0] == 'N' || ICAO[0] == 'O' || ICAO[0] == 'P' || ICAO[0] == 'S' || ICAO[0] == 'T') {
               avBotChartURL = `https://avbotserver3.herokuapp.com/chart/${ICAO}`;
@@ -707,7 +696,6 @@ bot.on("message", async msg => {
             }
             request(avBotChartURL, (err, res2, body) => {
               if (res2.statusCode == 200) {
-                console.log("Hello2");
                 let chartsEmbed = new Discord.RichEmbed()
                   .setTitle(`Chart for ${ICAO}`)
                   .setColor(successColor)
@@ -769,8 +757,6 @@ bot.on("message", async msg => {
 
         }
       });
-      // req.end();
-    
   }
 
   if (cmd == `${prefix}metar`) {
@@ -1533,7 +1519,7 @@ bot.on("message", async msg => {
       functions.logger(`error`, `${msg.author.tag} tried to change prefix for ${msg.guild.name}`);
       return;
     }
-
+    params[0] = params[0].toLowerCase();
     Guild.findOneAndUpdate({guild_id: msg.guild.id}, {prefix: params[0]}, (err, newGuild) => {
       if(err) console.log(err);
       else {
@@ -1651,9 +1637,12 @@ bot.on("message", async msg => {
         .addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
         .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
         .addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
-        .addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
         .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
         .addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`)
+
+      if (msg.member.hasPermission("ADMINISTRATOR")) {
+        helpEmbed.addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
+      }
   
       msg.channel.send(helpEmbed);
       functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
