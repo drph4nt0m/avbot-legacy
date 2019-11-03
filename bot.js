@@ -69,6 +69,8 @@ let language = "en";
 const successColor = "#1a8fe3";
 const errorColor = "#bf3100";
 const avwx = "https://avwx.rest/api/";
+const avwxHeaders = {Authorization: process.env.AVWX_TOKEN}
+
 const routeAPI = "https://api.flightplandatabase.com";
 
 const cwd = process.cwd();
@@ -377,8 +379,8 @@ bot.on("message", async msg => {
 									} else if (decoded[3] == 'ATC') {
 										presentFlag = true;
 
-										var url = `${avwx}station/${ICAO.substring(0,4)}`
-										request(url, function (err, response, body) {
+                    var url = `${avwx}station/${ICAO.substring(0,4)}`
+										request({url: url, headers: avwxHeaders}, function (err, response, body) {
 											let info = JSON.parse(body);
 											if (info.error) {
 												let ivaoEmbed = new Discord.RichEmbed()
@@ -490,7 +492,7 @@ bot.on("message", async msg => {
 							presentFlag = true;
 
 							var url = `${avwx}station/${ICAO.substring(0,4)}`
-							request(url, function (err, response, body) {
+							request({url: url, headers: avwxHeaders}, function (err, response, body) {
 								let info = JSON.parse(body);
 								if (info.error) {
 									let ivaoEmbed = new Discord.RichEmbed()
@@ -764,7 +766,7 @@ bot.on("message", async msg => {
 
       let url = avwx + `metar/${ICAO}?options=info,translate,speech`;
 
-      request(url, function (err, response, body) {
+      request({url: url, headers: avwxHeaders}, function (err, response, body) {
         let metar = JSON.parse(body);
         if (metar.error) {
           if (icao[ICAO]) {
@@ -928,7 +930,7 @@ bot.on("message", async msg => {
 
       let url = avwx + `taf/${ICAO}?options=info,translate,speech`;
 
-      request(url, function (err, response, body) {
+      request({url: url, headers: avwxHeaders}, function (err, response, body) {
         let taf = JSON.parse(body);
         if (taf.error) {
           if (icao[ICAO]) {
@@ -1038,7 +1040,7 @@ bot.on("message", async msg => {
 
       let url = avwx + `station/${ICAO}`;
 
-      request(url, function (err, response, body) {
+      request({url: url, headers: avwxHeaders}, function (err, response, body) {
         let info = JSON.parse(body);
         if (info.error) {
           if (icao[ICAO]) {
@@ -1212,7 +1214,7 @@ bot.on("message", async msg => {
       let metarAvailable = true;
       let chartAvailable = true;
       
-      request(metarURL, function (err, response, body) {
+      request({url: metarURL, headers: avwxHeaders}, function (err, response, body) {
         let metar = JSON.parse(body);
         let readableMetar  = "";
         if (metar.error) {
