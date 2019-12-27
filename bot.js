@@ -789,6 +789,7 @@ bot.on("message", async msg => {
           }
         } else {
           let raw = metar.raw;
+          console.log(metar);
           let readable = "";
 
           readable += `**Station : ** `;
@@ -816,7 +817,7 @@ bot.on("message", async msg => {
 
           readable += `\n`;
 
-          readable += `**Observed at : ** ${moment.tz(metar.meta.timestamp, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
+          readable += `**Observed at : ** ${moment.tz(metar.time.dt, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
 
           if (metar.wind_speed) {
             readable += `**Wind : **`;
@@ -979,7 +980,7 @@ bot.on("message", async msg => {
 
           readable += `\n`;
 
-          readable += `**Observed at : ** ${moment.tz(taf.meta.timestamp, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
+          readable += `**Observed at : ** ${moment.tz(taf.time.dt, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
 
           readable += `**Report : ** \n${taf.speech}`;
 
@@ -1669,10 +1670,13 @@ bot.on("message", async msg => {
         .addField(`${prefix}online [FIR]`, `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`)
         .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
         .addField(`${prefix}zulu [ICAO] [Czas Lokalny]`, `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`)
-        .addField(`${prefix}avbotprefix [NOWY_PREFIX]`, `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`)
         .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
         .addField(`${prefix}invite`, `Podaje link do dołączenia do naszego serwera supportu AvBota.`)
   
+      if (msg.member.hasPermission("ADMINISTRATOR")) {
+        helpEmbed.addField(`${prefix}avbotprefix [NOWY_PREFIX]`, `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`)
+      }
+
       msg.channel.send(helpEmbed);
       functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
     }
