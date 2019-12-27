@@ -789,7 +789,6 @@ bot.on("message", async msg => {
           }
         } else {
           let raw = metar.raw;
-          console.log(metar);
           let readable = "";
 
           readable += `**Station : ** `;
@@ -803,13 +802,13 @@ bot.on("message", async msg => {
           if (metar.info.name || metar.info.city) {
             readable += ` (`;
             if (metar.info.name) {
-              readable += `${metar.info.name}`;
+              readable += `${decodeURIComponent(escape(metar.info.name))}`;
               if (metar.info.city) {
-                readable += `, ${metar.info.city}`;
+                readable += `, ${decodeURIComponent(escape(metar.info.city))}`;
               }
             } else {
               if (metar.info.city) {
-                readable += `${metar.info.city}`;
+                readable += `${decodeURIComponent(escape(metar.info.city))}`;
               }
             }
             readable += `)`;
@@ -817,7 +816,7 @@ bot.on("message", async msg => {
 
           readable += `\n`;
 
-          readable += `**Observed at : ** ${moment.tz(metar.time.dt, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
+          readable += `**Observed at : ** ${moment.tz(new Date(metar.time.dt.replace('T',' ')), "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
 
           if (metar.wind_speed) {
             readable += `**Wind : **`;
@@ -966,13 +965,13 @@ bot.on("message", async msg => {
           if (taf.info.name || taf.info.city) {
             readable += ` (`;
             if (taf.info.name) {
-              readable += `${taf.info.name}`;
+              readable += `${decodeURIComponent(escape(taf.info.name))}`;
               if (taf.info.city) {
-                readable += `, ${taf.info.city}`;
+                readable += `, ${decodeURIComponent(escape(taf.info.city))}`;
               }
             } else {
               if (taf.info.city) {
-                readable += `${taf.info.city}`;
+                readable += `${decodeURIComponent(escape(taf.info.city))}`;
               }
             }
             readable += `)`;
@@ -980,7 +979,7 @@ bot.on("message", async msg => {
 
           readable += `\n`;
 
-          readable += `**Observed at : ** ${moment.tz(taf.time.dt, "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
+          readable += `**Observed at : ** ${moment.tz(new Date(taf.time.dt.replace('T',' ')), "Etc/Zulu").format("YYYY-MM-DD HH:mm:ss")} Z\n`;
 
           readable += `**Report : ** \n${taf.speech}`;
 
