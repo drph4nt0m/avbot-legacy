@@ -1089,10 +1089,18 @@ bot.on("message", async msg => {
               icaoEmbed.addField(`IATA`, info.iata, true)
             }
             if(info.name) {
-              icaoEmbed.addField(`Name`, info.name)
+              try {
+                icaoEmbed.addField(`Name`, decodeURIComponent(escape(info.name)));
+              } catch (error) {
+                icaoEmbed.addField(`Name`, info.name)
+              }
             }
             if(info.city) {
-              icaoEmbed.addField(`City`, info.city, true)
+              try {
+                icaoEmbed.addField(`City`, decodeURIComponent(escape(info.city)), true);
+              } catch (error) {
+                icaoEmbed.addField(`City`, info.city, true)
+              }
             }
             if(info.country) {
               icaoEmbed.addField(`Country`, info.country, true)
