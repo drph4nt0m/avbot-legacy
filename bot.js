@@ -100,7 +100,7 @@ bot.on("ready", async () => {
 
   let guildIds = bot.guilds.map(e => e.id);
   let guildNames = bot.guilds.map(e => e.name);
-  
+
   let guildArray = [];
 
   for(let i = 0; i < guildIds.length; i++) {
@@ -121,16 +121,16 @@ bot.on("ready", async () => {
   //   }
   // );
 
-  
+
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   console.log(`
-          ____                 _______                 __       __         __   _____                                          
+          ____                 _______                 __       __         __   _____
          /    \\  ___      ___ |  ___  \\  ________   __|  |__    \\  \\      /  / /__   \\
         /  /\\  \\ \\  \\    /  / |  |_/  / |   __   | |__    __|    \\  \\    /  /     )  /
        /  /__\\  \\ \\  \\  /  /  |  |_  |  |  |  |  |    |  |        \\  \\  /  /     /  /
       /  /____\\  \\ \\  \\/  /   |  |_\\  \\ |  |__|  |    |  |         \\  \\/  /     /  /_
      /__/      \\__\\ \\____/    |_______/ |________|    |__|          \\____/     |_____|
-                                                                                           
+
 	`);
   console.log(`${start_time}\t\t\t${bot.user.id}\t\t\tRahul Singh`);
   console.log("– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
@@ -243,7 +243,7 @@ bot.on("guildCreate", guild => {
   bot.channels
     .find(channel => channel.id === process.env.GuildsChannel)
     .send(newGuildEmbed);
-  
+
   Guild.create({guild_id: guild.id, guild_name: guild.name}, (err, guild) => {
     if(err) console.log(err);
     else console.log(guild);
@@ -277,7 +277,7 @@ bot.on("guildDelete", guild => {
 
 bot.on("message", async msg => {
   if (msg.author.bot) return;
-  
+
   let currentGuild = null;
   currentGuild = await Guild.findOne({guild_id: msg.guild.id});
   prefix = currentGuild.prefix;
@@ -373,7 +373,7 @@ bot.on("message", async msg => {
 											.addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
 											.addField(`Route`, `${decoded[30]}`, true)
 											.setFooter(`Source: IVAO API`);
-                    
+
                     msg.channel.send(ivaoEmbed);
                     functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 									} else if (decoded[3] == 'ATC') {
@@ -393,7 +393,7 @@ bot.on("message", async msg => {
 													.addField(`Frequency`, `${decoded[4]}`, true)
 													.addField(`ATIS`, `${decoded[35]}`, true)
 													.setFooter(`Source: IVAO API`);
-                        
+
                         msg.channel.send(ivaoEmbed);
                         functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											} else {
@@ -407,7 +407,7 @@ bot.on("message", async msg => {
 													.addField(`Frequency`, `${decoded[4]}`, true)
 													.addField(`ATIS`, `${decoded[35]}`, true)
 													.setFooter(`Source: IVAO API`);
-                        
+
                         msg.channel.send(ivaoEmbed);
                         functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											}
@@ -421,7 +421,7 @@ bot.on("message", async msg => {
 									.setColor(errorColor)
 									.setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on IVAO network`)
 									.setFooter(`Source: IVAO API`);
-                
+
                 msg.channel.send(ivaoErrorEmbed);
                 functions.logger(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
 							}
@@ -485,7 +485,7 @@ bot.on("message", async msg => {
 								.addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
 								.addField(`Route`, `${decoded[30]}`, true)
 								.setFooter(`Source: IVAO API`);
-              
+
               msg.channel.send(ivaoEmbed);
               functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 						} else if (decoded[3] == 'ATC') {
@@ -505,7 +505,7 @@ bot.on("message", async msg => {
 										.addField(`Frequency`, `${decoded[4]}`, true)
 										.addField(`ATIS`, `${decoded[35]}`, true)
 										.setFooter(`Source: IVAO API`);
-                  
+
                   msg.channel.send(ivaoEmbed);
                   functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								} else {
@@ -519,7 +519,7 @@ bot.on("message", async msg => {
 										.addField(`Frequency`, `${decoded[4]}`, true)
 										.addField(`ATIS`, `${decoded[35]}`, true)
 										.setFooter(`Source: IVAO API`);
-                  
+
                   msg.channel.send(ivaoEmbed);
                   functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								}
@@ -533,7 +533,7 @@ bot.on("message", async msg => {
 						.setColor(errorColor)
 						.setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on IVAO network`)
 						.setFooter(`Source: IVAO API`);
-          
+
           msg.channel.send(ivaoErrorEmbed);
           functions.logger(`error`, `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`);
 				}
@@ -567,7 +567,7 @@ bot.on("message", async msg => {
 							lastTimeUpdate = generalArray[3].split(' = ')[1];
               functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
 							let clientsArray = clients.split('\n');
-              
+
               let presentFlag = false;
               let found = [];
 							clientsArray.forEach(client => {
@@ -590,11 +590,11 @@ bot.on("message", async msg => {
                   .setTitle(`IVAO : ${ICAO}`)
                   .setColor(successColor)
                   .setFooter(`Source: IVAO API`);
-              
+
                 found.forEach(ele => {
                 onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
                 });
-      
+
                 msg.channel.send(onlineEmbed);
                 functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
               } else {
@@ -603,7 +603,7 @@ bot.on("message", async msg => {
 									.setColor(errorColor)
 									.setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
 									.setFooter(`Source: IVAO API`);
-                
+
                 msg.channel.send(onlineErrorEmbed);
                 functions.logger(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
 							}
@@ -621,7 +621,7 @@ bot.on("message", async msg => {
 				let airports = contents.split('!SERVERS')[0];
 				let servers = contents.split('!SERVERS')[1];
         let clientsArray = clients.split('\n');
-        
+
 				let presentFlag = false;
         found = [];
         clientsArray.forEach(client => {
@@ -644,7 +644,7 @@ bot.on("message", async msg => {
             .setTitle(`IVAO : ${ICAO}`)
             .setColor(successColor)
             .setFooter(`Source: IVAO API`);
-          
+
           found.forEach(ele => {
            onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
           });
@@ -657,7 +657,7 @@ bot.on("message", async msg => {
             .setColor(errorColor)
             .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
             .setFooter(`Source: IVAO API`);
-          
+
           msg.channel.send(onlineErrorEmbed);
           functions.logger(`error`, `Online details requested by ${msg.author.tag} for ${ICAO} not available`);
         }
@@ -703,26 +703,26 @@ bot.on("message", async msg => {
                   .setColor(successColor)
                   .setDescription(`[Click here for ${ICAO} Charts](${avBotChartURL})`)
                   .setFooter(`This is not a source for official charts. Please obtain an official chart from the appropriate agency`);
-  
+
                 msg.author.send(chartsEmbed);
                 functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
-  
+
                 if (msg.guild != null) {
                   chartsEmbed = new Discord.RichEmbed()
                     .setTitle(`Chart for ${ICAO}`)
                     .setColor(successColor)
                     .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
-  
+
                   msg.channel.send(chartsEmbed);
                 }
               } else {
-  
+
                 if (icao[ICAO]) {
                   let chartErrorEmbed = new Discord.RichEmbed()
                     .setTitle(`Chart for ${ICAO}`)
                     .setColor(errorColor)
                     .setDescription(`Sorry ${msg.author}, ${ICAO} chart is not available in our database`);
-    
+
                   msg.channel.send(chartErrorEmbed);
                   functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`);
                 } else {
@@ -730,7 +730,7 @@ bot.on("message", async msg => {
                     .setTitle(`Chart for ${ICAO}`)
                     .setColor(errorColor)
                     .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-            
+
                   msg.channel.send(chartErrorEmbed);
                   functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
                 }
@@ -751,7 +751,7 @@ bot.on("message", async msg => {
                 .setTitle(`Chart for ${ICAO}`)
                 .setColor(errorColor)
                 .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-        
+
               msg.channel.send(chartErrorEmbed);
               functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`);
             }
@@ -783,7 +783,7 @@ bot.on("message", async msg => {
               .setTitle(`METAR for ${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-      
+
             msg.channel.send(metarErrorEmbed);
             functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `);
           }
@@ -799,19 +799,28 @@ bot.on("message", async msg => {
             readable += `${metar.station}`;
           }
 
+          let station = '';
           if (metar.info.name || metar.info.city) {
-            readable += ` (`;
             if (metar.info.name) {
-              readable += `${decodeURIComponent(escape(metar.info.name))}`;
-              if (metar.info.city) {
-                readable += `, ${decodeURIComponent(escape(metar.info.city))}`;
-              }
-            } else {
-              if (metar.info.city) {
-                readable += `${decodeURIComponent(escape(metar.info.city))}`;
+              try {
+                station += `${decodeURIComponent(escape(metar.info.name))}`;
+                if (metar.info.city) {
+                  try {
+                    station += `, ${decodeURIComponent(escape(metar.info.city))}`;
+                  } catch(error) {}
+                }
+              } catch (error) {
+                if (metar.info.city) {
+                  try {
+                    station += `${decodeURIComponent(escape(metar.info.city))}`;
+                  } catch(error) {}
+                }
               }
             }
-            readable += `)`;
+          }
+
+          if(station) {
+            readable += ` (${station})`
           }
 
           readable += `\n`;
@@ -946,7 +955,7 @@ bot.on("message", async msg => {
               .setTitle(`TAF for ${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-      
+
             msg.channel.send(tafErrorEmbed);
             functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `);
           }
@@ -962,19 +971,28 @@ bot.on("message", async msg => {
             readable += `${taf.station}`;
           }
 
+          let station = '';
           if (taf.info.name || taf.info.city) {
-            readable += ` (`;
             if (taf.info.name) {
-              readable += `${decodeURIComponent(escape(taf.info.name))}`;
-              if (taf.info.city) {
-                readable += `, ${decodeURIComponent(escape(taf.info.city))}`;
-              }
-            } else {
-              if (taf.info.city) {
-                readable += `${decodeURIComponent(escape(taf.info.city))}`;
+              try {
+                station += `${decodeURIComponent(escape(taf.info.name))}`;
+                if (taf.info.city) {
+                  try {
+                    station += `, ${decodeURIComponent(escape(taf.info.city))}`;
+                  } catch(error) {}
+                }
+              } catch (error) {
+                if (taf.info.city) {
+                  try {
+                    station += `${decodeURIComponent(escape(taf.info.city))}`;
+                  } catch(error) {}
+                }
               }
             }
-            readable += `)`;
+          }
+
+          if(station) {
+            readable += ` (${station})`
           }
 
           readable += `\n`;
@@ -1008,7 +1026,7 @@ bot.on("message", async msg => {
             .setColor(successColor)
             .setDescription(`${result[0].notams[1]}`)
             .setFooter('This is not a source for official briefing. Please use the appropriate forums');
-          
+
           msg.channel.send(notamEmbed);
           functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`);
         } else {
@@ -1026,16 +1044,16 @@ bot.on("message", async msg => {
               .setTitle(`NOTAMs for ${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-      
+
             msg.channel.send(notamErrorEmbed);
             functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `);
           }
         }
       });
-    
+
   }
-  
-  if (cmd == `${prefix}icao`) { 
+
+  if (cmd == `${prefix}icao`) {
     if (args.length === 1) return;
 
       let url = avwx + `station/${ICAO}`;
@@ -1056,7 +1074,7 @@ bot.on("message", async msg => {
               .setTitle(`${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-      
+
             msg.channel.send(icaoErrorEmbed);
             functions.logger(`warn`, `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `);
           }
@@ -1120,7 +1138,7 @@ bot.on("message", async msg => {
             functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
         }
       })
-    
+
   }
 
   if (cmd == `${prefix}zulu`) {
@@ -1129,7 +1147,7 @@ bot.on("message", async msg => {
 				.setTitle('ZULU Time')
         .setColor(successColor)
 				.setDescription(`${timeform3} Z`)
-        
+
       msg.channel.send(zuluEmbed);
       functions.logger(`info`, `Zulu time sent to ${msg.author.tag}`);
     } else {
@@ -1139,7 +1157,7 @@ bot.on("message", async msg => {
         let timeParam = params[1];
         var hh = parseInt(timeParam[0] + timeParam[1]);
         var mm = parseInt(timeParam[2] + timeParam[3]);
-        
+
         if (icao[ICAO]) {
           if ((hh < 0 || hh > 23) || (mm < 0 || mm > 59) || timeParam.length > 4) {
             let zuluErrorEmbed = new Discord.RichEmbed()
@@ -1171,12 +1189,12 @@ bot.on("message", async msg => {
                 timeTemp += hh + ":" + mm;
                 timeTemp = moment.tz(timeTemp, timeZone);
                 let timeToSend = timeTemp.utc().format('DD/MM HH:mm');
-                
+
                 let zuluEmbed = new Discord.RichEmbed()
                   .setTitle(`ZULU time at ${ICAO} when local time is ${timeParam}hrs`)
                   .setColor(successColor)
                   .setDescription(`${timeToSend} Z`)
-                
+
                 msg.channel.send(zuluEmbed);
                 functions.logger(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`);
               }
@@ -1187,18 +1205,18 @@ bot.on("message", async msg => {
             .setTitle(`ZULU Time`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
-        
+
           msg.channel.send(zuluErrorEmbed);
           functions.logger(`warn`, `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `);
         }
-        
+
       } else {
 				let zuluErrorEmbed = new Discord.RichEmbed()
 					.setTitle(`ZULU Time`)
 					.setColor(errorColor)
           .setDescription(`${msg.author}, Invalid Arguments`)
           .setFooter(`Hint : ${prefix}zulu [ICAO] [Local Time]`)
-        
+
         msg.channel.send(zuluErrorEmbed);
         functions.logger(`warn`, `${msg.author.tag} asked for Zulu time but arguments were invalid`);
 			}
@@ -1213,7 +1231,7 @@ bot.on("message", async msg => {
 
       let metarAvailable = true;
       let chartAvailable = true;
-      
+
       request({url: metarURL, headers: avwxHeaders}, function (err, response, body) {
         let metar = JSON.parse(body);
         let readableMetar  = "";
@@ -1230,9 +1248,9 @@ bot.on("message", async msg => {
           port: 80,
           path: `/navdb/chart/${ICAO}.pdf`
         };
-  
+
         let req = http.request(options, function (res) {
-          if (res.statusCode != 200) { 
+          if (res.statusCode != 200) {
             chartAvailable = false;
           }
 
@@ -1268,7 +1286,7 @@ bot.on("message", async msg => {
                 .setTitle(`Briefing for ${ICAO}`)
                 .setColor(errorColor)
                 .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`)
-            
+
               msg.channel.send(briefErrorEmbed);
               functions.logger(`warn`, `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `);
             }
@@ -1276,7 +1294,7 @@ bot.on("message", async msg => {
         });
         req.end();
       })
-    
+
   }
 
   if (cmd == `${prefix}route`) {
@@ -1291,7 +1309,7 @@ bot.on("message", async msg => {
                 .setTitle(`Route: ${from} ${to}`)
                 .setColor(errorColor)
                 .setDescription(`Unable to fetch route for ${from}-${to}`)
-                
+
               msg.channel.send(routeErrorEmbed);
               functions.logger(`error`, `${from} ${to} route requested by ${msg.author.tag} was not available.`);
             } else {
@@ -1348,7 +1366,7 @@ bot.on("message", async msg => {
                 .setColor(successColor)
                 .setDescription(message)
                 .setFooter(`This is not a source for official briefing. Please obtain a briefing from the appropriate agency `);
-                
+
               msg.channel.send(routeEmbed);
               functions.logger(`info`, `${from}-${to} route sent to ${msg.author.tag}`);
               });
@@ -1359,7 +1377,7 @@ bot.on("message", async msg => {
             .setTitle(`Route`)
             .setColor(errorColor)
             .setDescription(`Invalid Arguments\nFollow ${prefix}route [FROM-ICAO] [TO-ICAO]`)
-            
+
           msg.channel.send(routeErrorEmbed);
           functions.logger(`error`, `${from} ${to} route with invalid arguments requested by ${msg.author.tag}`);
         }
@@ -1368,7 +1386,7 @@ bot.on("message", async msg => {
         .setTitle(`Route`)
         .setColor(errorColor)
         .setDescription(`Your premium subscription has expired. To know more join our [Support Server](${process.env.AvBotSupportServer})`)
-        
+
       msg.channel.send(routeErrorEmbed);
       functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route) [EXPIRED].`);
       }
@@ -1377,7 +1395,7 @@ bot.on("message", async msg => {
         .setTitle(`Route`)
         .setColor(errorColor)
         .setDescription(`This is a premium only feature. To know more join our [Support Server](${process.env.AvBotSupportServer})`)
-        
+
       msg.channel.send(routeErrorEmbed);
       functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route).`);
     }
@@ -1401,7 +1419,7 @@ bot.on("message", async msg => {
         .setDescription(`${msg.author}, link for adding **AvBot** to your Discord server has been sent to you.`)
 
       msg.channel.send(linkEmbed2);
-    
+
     }
 	}
 
@@ -1411,7 +1429,7 @@ bot.on("message", async msg => {
       .setTitle('AvBot Support Server')
       .setColor(successColor)
       .setDescription(`[Click here to join our AvBot Support Server](${process.env.AvBotSupportServer})`)
-    
+
     msg.author.send(inviteEmbed);
     functions.logger(`info`, `Server link sent to ${msg.author.tag}`);
 
@@ -1420,17 +1438,17 @@ bot.on("message", async msg => {
         .setTitle('AvBot Support Server')
         .setColor(successColor)
         .setDescription(`${msg.author}, link for joining our **AvBot Support Server** has been sent to you.`)
-    
+
       msg.channel.send(inviteEmbed2);
     }
 	}
-  
+
   if(cmd == `${prefix}guild` || cmd == `${prefix}guilds`) {
     if (msg.author.id !== process.env.myID) {
       functions.logger(`error`, `${msg.author.tag} tried to check guilds`);
       return;
     }
-    
+
     let guildsEmbed = new Discord.RichEmbed()
       .setTitle(`AvBot Guilds`)
       .setColor(successColor)
@@ -1528,7 +1546,7 @@ bot.on("message", async msg => {
         let prefixEmbed = new Discord.RichEmbed()
           .setTitle(`AvBot Prefix Changed to \`${params[0]}\``)
           .setColor(successColor);
-    
+
         msg.channel.send(prefixEmbed)
         functions.logger(`info`, `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`);
       }
@@ -1551,7 +1569,7 @@ bot.on("message", async msg => {
           let languageEmbed = new Discord.RichEmbed()
             .setTitle(`AvBot Language Changed to \`${params[0].toUpperCase()}\``)
             .setColor(successColor);
-      
+
           msg.channel.send(languageEmbed)
           functions.logger(`info`, `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${msg.author.tag}`);
         }
@@ -1624,7 +1642,7 @@ bot.on("message", async msg => {
   if(language === 'en') {
 
     if (cmd == `${prefix}help`) {
-  
+
       let helpEmbed = new Discord.RichEmbed()
         .setTitle('AvBot to the rescue!')
         .setColor(successColor)
@@ -1645,7 +1663,7 @@ bot.on("message", async msg => {
       if (msg.member.hasPermission("ADMINISTRATOR")) {
         helpEmbed.addField(`${prefix}avbotprefix [NEW_PREFIX]`, `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`)
       }
-  
+
       msg.channel.send(helpEmbed);
       functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
     }
@@ -1654,7 +1672,7 @@ bot.on("message", async msg => {
   if(language === 'pl') {
 
     if (cmd == `${prefix}help`) {
-  
+
       let helpEmbed = new Discord.RichEmbed()
         .setTitle('AvBot na ratunek!')
         .setColor(successColor)
@@ -1671,7 +1689,7 @@ bot.on("message", async msg => {
         .addField(`${prefix}zulu [ICAO] [Czas Lokalny]`, `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`)
         .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
         .addField(`${prefix}invite`, `Podaje link do dołączenia do naszego serwera supportu AvBota.`)
-  
+
       if (msg.member.hasPermission("ADMINISTRATOR")) {
         helpEmbed.addField(`${prefix}avbotprefix [NOWY_PREFIX]`, `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`)
       }
