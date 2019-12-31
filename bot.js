@@ -73,17 +73,22 @@ const avwxHeaders = {Authorization: process.env.AVWX_TOKEN}
 
 const routeAPI = "https://api.flightplandatabase.com";
 
+const IVAOWhazzup = 'http://whazzup.ivao.aero/whazzup.txt.gz';
+
 const cwd = process.cwd();
 const name = 'whazzup.txt.gz';
 const to = cwd + '/';
 const from = path.join(cwd, name);
 
-let lastTimeUpdate = 0;
-const pilotRatings = ['', 'Observer', 'FS1', 'FS2', 'FS3', 'PP', 'SPP', 'CP', 'ATP', 'SFI', 'CFI'];
-const facilityTypes = ['Observer', 'Flight Information', 'Delivery', 'Ground', 'Tower', 'Approach', 'ACC', 'Departure'];
-const facilityTypes2 = ['Observer', 'Flight Information', 'Delivery', 'Ground', 'Tower', 'Approach', 'Control', 'Departure'];
-const administrativeRatings = ['Suspended', 'Observer', 'User', '', '', '', '', '', '', '', '', 'Supervisor', 'Administrator'];
-const atcRatings = ['', 'Observer', 'AS1', 'AS2', 'AS3', 'ADC', 'APC', 'ACC', 'SEC', 'SAI', 'CAI'];
+let lastTimeUpdateIVAO = 0;
+const pilotRatingsIVAO = ['', 'Observer', 'FS1', 'FS2', 'FS3', 'PP', 'SPP', 'CP', 'ATP', 'SFI', 'CFI'];
+const facilityTypesIVAO = ['Observer', 'Flight Information', 'Delivery', 'Ground', 'Tower', 'Approach', 'ACC', 'Departure'];
+const facilityTypes2IVAO = ['Observer', 'Flight Information', 'Delivery', 'Ground', 'Tower', 'Approach', 'Control', 'Departure'];
+const administrativeRatingsIVAO = ['Suspended', 'Observer', 'User', '', '', '', '', '', '', '', '', 'Supervisor', 'Administrator'];
+const atcRatingsIVAO = ['', 'Observer', 'AS1', 'AS2', 'AS3', 'ADC', 'APC', 'ACC', 'SEC', 'SAI', 'CAI'];
+
+
+const VatsimWhazzup = 'http://us.data.vatsim.net/vatsim-data.txt';
 
 const bot = new Discord.Client();
 const dbl = new DBL(process.env.dblToken, bot);
@@ -153,24 +158,23 @@ bot.on("ready", async () => {
     dbl.postStats(bot.guilds.size, null, null);
   }, 1800000);
 
-
   fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 		if (err) {
 			var file = fs.createWriteStream('whazzup.txt.gz');
-			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
+			var req = http.get(IVAOWhazzup, function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          functions.logger(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `IVAO Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            functions.logger(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `IVAO Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
 							let generalArray = general.split('\n');
-							lastTimeUpdate = generalArray[3].split(' = ')[1];
-							functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+							lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+							functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
 						});
 					});
 				});
@@ -179,33 +183,76 @@ bot.on("ready", async () => {
 			contents = contents.split('!GENERAL')[1];
 			let general = contents.split('!CLIENTS')[0];
 			let generalArray = general.split('\n');
-			lastTimeUpdate = generalArray[3].split(' = ')[1];
+			lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
 
-			if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+			if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
 				var file = fs.createWriteStream('whazzup.txt.gz');
-				var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
+				var req = http.get(IVAOWhazzup, function (response) {
 					response.pipe(file);
 					response.on("end", () => {
-            functions.logger(`info`, `Whazzup downloaded`);
+            functions.logger(`info`, `IVAO Whazzup downloaded`);
 						const extract = inly(from, to);
 
 						extract.on('end', () => {
-              functions.logger(`info`, `Whazzup extracted`);
+              functions.logger(`info`, `IVAO Whazzup extracted`);
 							fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 								contents = contents.split('!GENERAL')[1];
 								let general = contents.split('!CLIENTS')[0];
 								let generalArray = general.split('\n');
-								lastTimeUpdate = generalArray[3].split(' = ')[1];
-								functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+								lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+								functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
 							});
 						});
 					});
 				});
 			} else {
-				functions.logger(`info`, `Whazzup last updated at ${lastTimeUpdate}`);
+				functions.logger(`info`, `Whazzup last updated at ${lastTimeUpdateIVAO}`);
 			}
 		}
-	});
+  });
+
+  fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+    if (err) {
+      var file = fs.createWriteStream('vatsim-data.txt');
+      var req = http.get(VatsimWhazzup, function(response) {
+        response.pipe(file);
+        response.on('end', () => {
+          functions.logger(`info`, `Vatsim Whazzup downloaded`);
+          fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+            contents = contents.split('!GENERAL:')[1];
+            let general = contents.split('!VOICE SERVERS:')[0];
+            let generalArray = general.split('\n');
+            lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+            functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
+          });
+        });
+      });
+    } else {
+      contents = contents.split('!GENERAL:')[1];
+			let general = contents.split('!VOICE SERVERS:')[0];
+			let generalArray = general.split('\n');
+      lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+
+			if (parseInt(lastTimeUpdateVatsim, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+        var file = fs.createWriteStream('vatsim-data.txt');
+        var req = http.get(VatsimWhazzup, function(response) {
+          response.pipe(file);
+          response.on('end', () => {
+            functions.logger(`info`, `Vatsim Whazzup downloaded`);
+            fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+              contents = contents.split('!GENERAL:')[1];
+              let general = contents.split('!VOICE SERVERS:')[0];
+              let generalArray = general.split('\n');
+              lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+              functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
+            });
+          });
+        });
+      } else {
+				functions.logger(`info`, `Vatsim last updated at ${lastTimeUpdateVatsim}`);
+			}
+    }
+  });
 });
 
 bot.on("guildCreate", guild => {
@@ -302,18 +349,267 @@ bot.on("message", async msg => {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
   }
 
+  if (cmd == `${prefix}vatsim`) {
+    if (parseInt(lastTimeUpdateVatsim, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+      var file = fs.createWriteStream('vatsim-data.txt');
+      var req = http.get(VatsimWhazzup, function(response) {
+        response.pipe(file);
+        response.on('end', () => {
+          functions.logger(`info`, `Vatsim Whazzup downloaded`);
+          fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+            contents = contents.split('!GENERAL:')[1];
+            let general = contents.split('!VOICE SERVERS:')[0];
+            contents = contents.split('!VOICE SERVERS:')[1];
+            let voiceServers = contents.split('!CLIENTS')[0];
+            contents = contents.split('!CLIENTS')[1];
+            let clients = contents.split('!SERVERS')[0];
+            contents = contents.split('!SERVERS')[1];
+            let servers = contents.split('!PREFILE')[0];
+            let prefile = contents.split('!PREFILE')[1];
+            let generalArray = general.split('\n');
+            lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+            functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
+            let clientsArray = clients.split('\n');
+            let presentFlag = false;
+            clientsArray.forEach(client => {
+              let decoded = client.split(':');
+              if (decoded[0] == ICAO) {
+                if (decoded[3] == 'PILOT') {
+                  presentFlag = true;
+                  let dt = 0;
+                  if (decoded[22].length == 2) {
+                    dt = '00' + ':' + decoded[22].substring(0, 2);
+                  } else if (decoded[22].length == 3) {
+                    dt = '0' + decoded[22].substring(0, 1) + ':' + decoded[22].substring(1, 3);
+                  } else {
+                    dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
+                  }
+                  let eeth = 0;
+                  if (decoded[24].length == 1) {
+                    eeth = '0' + decoded[24];
+                  } else {
+                    eeth = decoded[24];
+                  }
+                  let eetm = 0;
+                  if (decoded[25].length == 1) {
+                    eetm = '0' + decoded[25];
+                  } else {
+                    eetm = decoded[25];
+                  }
+                  let vatsimEmbed = new Discord.RichEmbed()
+                    .setTitle(`VATSIM : ${ICAO}`)
+                    .setColor(successColor)
+                    .addField(`Call Sign`, `${decoded[0]}`, true)
+                    .addField(`CID`, `${decoded[1]}`, true)
+                    .addField(`Pilot`, `${decoded[2]}`, true)
+                    .addField(`Departure`, `${decoded[11]}`, true)
+                    .addField(`Destination`, `${decoded[13]}`, true)
+                    .addField(`Transponder`, `${decoded[17]}`, true)
+                    .addField(`Latitude`, `${decoded[5]}`, true)
+                    .addField(`Longitude`, `${decoded[6]}`, true)
+                    .addField(`Altitude`, `${decoded[7]} ft`, true)
+                    .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
+                    .addField(`Cruising Speed`, `${decoded[10]}`, true)
+                    .addField(`Cruising Level`, `${decoded[12]}`, true)
+                    .addField(`Departure Time`, `${dt} Zulu`, true)
+                    .addField(`EET`, `${eeth}:${eetm}`, true)
+                    .addField(`Aircraft`, `${decoded[9]}`, true)
+                    .addField(`Route`, `${decoded[30]}`, true)
+                    .setFooter(`Source: VATSIM API`);
+
+                  msg.channel.send(vatsimEmbed);
+                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                } else if (decoded[3] == 'ATC') {
+                  presentFlag = true;
+
+                  var url = `${avwx}station/${ICAO.substring(0, 4)}`;
+                  request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+                    let info = JSON.parse(body);
+                    if (info.error) {
+                      let vatsimEmbed = new Discord.RichEmbed()
+                        .setTitle(`VATSIM : ${ICAO}`)
+                        .setColor(successColor)
+                        .addField(`Call Sign`, `${decoded[0]}`, true)
+                        .addField(`CID`, `${decoded[1]}`, true)
+                        .addField(`Controller`, `${decoded[2]}`, true)
+                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                        .addField(`Frequency`, `${decoded[4]}`, true)
+                        // .addField(`ATIS`, `${decoded[35]}`, true)
+                        .setFooter(`Source: VATSIM API`);
+
+                      msg.channel.send(vatsimEmbed);
+                      functions.logger(
+                        `info`,
+                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                      );
+                    } else {
+                      let vatsimEmbed = new Discord.RichEmbed()
+                        .setTitle(`VATSIM : ${ICAO}`)
+                        .setColor(successColor)
+                        .addField(`Call Sign`, `${decoded[0]}`, true)
+                        .addField(`CID`, `${decoded[1]}`, true)
+                        .addField(`Controller`, `${decoded[2]}`, true)
+                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                        .addField(`Frequency`, `${decoded[4]}`, true)
+                        // .addField(`ATIS`, `${decoded[35]}`, true)
+                        .setFooter(`Source: VATSIM API`);
+
+                      msg.channel.send(vatsimEmbed);
+                      functions.logger(
+                        `info`,
+                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                      );
+                    }
+                  });
+                }
+              }
+            });
+            if (!presentFlag) {
+              let ivaoErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`VATSIM : ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on VATSIM network`)
+                .setFooter(`Source: VATSIM API`);
+
+              msg.channel.send(ivaoErrorEmbed);
+              functions.logger(
+                `error`,
+                `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
+              );
+            }
+          });
+        });
+      });
+    } else {
+      fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+        contents = contents.split('!GENERAL:')[1];
+        let general = contents.split('!VOICE SERVERS:')[0];
+        contents = contents.split('!VOICE SERVERS:')[1];
+        let voiceServers = contents.split('!CLIENTS')[0];
+        contents = contents.split('!CLIENTS')[1];
+        let clients = contents.split('!SERVERS')[0];
+        contents = contents.split('!SERVERS')[1];
+        let servers = contents.split('!PREFILE')[0];
+        let prefile = contents.split('!PREFILE')[1];
+        let generalArray = general.split('\n');
+        let clientsArray = clients.split('\n');
+        let presentFlag = false;
+        clientsArray.forEach(client => {
+          let decoded = client.split(':');
+          if (decoded[0] == ICAO) {
+            if (decoded[3] == 'PILOT') {
+              presentFlag = true;
+              let dt = 0;
+              if (decoded[22].length == 2) {
+                dt = '00' + ':' + decoded[22].substring(0, 2);
+              } else if (decoded[22].length == 3) {
+                dt = '0' + decoded[22].substring(0, 1) + ':' + decoded[22].substring(1, 3);
+              } else {
+                dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
+              }
+              let eeth = 0;
+              if (decoded[24].length == 1) {
+                eeth = '0' + decoded[24];
+              } else {
+                eeth = decoded[24];
+              }
+              let eetm = 0;
+              if (decoded[25].length == 1) {
+                eetm = '0' + decoded[25];
+              } else {
+                eetm = decoded[25];
+              }
+              let vatsimEmbed = new Discord.RichEmbed()
+                .setTitle(`VATSIM : ${ICAO}`)
+                .setColor(successColor)
+                .addField(`Call Sign`, `${decoded[0]}`, true)
+                .addField(`CID`, `${decoded[1]}`, true)
+                .addField(`Pilot`, `${decoded[2]}`, true)
+                .addField(`Departure`, `${decoded[11]}`, true)
+                .addField(`Destination`, `${decoded[13]}`, true)
+                .addField(`Transponder`, `${decoded[17]}`, true)
+                .addField(`Latitude`, `${decoded[5]}`, true)
+                .addField(`Longitude`, `${decoded[6]}`, true)
+                .addField(`Altitude`, `${decoded[7]} ft`, true)
+                .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
+                .addField(`Cruising Speed`, `${decoded[10]}`, true)
+                .addField(`Cruising Level`, `${decoded[12]}`, true)
+                .addField(`Departure Time`, `${dt} Zulu`, true)
+                .addField(`EET`, `${eeth}:${eetm}`, true)
+                .addField(`Aircraft`, `${decoded[9]}`, true)
+                .addField(`Route`, `${decoded[30]}`, true)
+                .setFooter(`Source: VATSIM API`);
+
+              msg.channel.send(vatsimEmbed);
+              functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+            } else if (decoded[3] == 'ATC') {
+              presentFlag = true;
+
+              var url = `${avwx}station/${ICAO.substring(0, 4)}`;
+              request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+                let info = JSON.parse(body);
+                if (info.error) {
+                  let vatsimEmbed = new Discord.RichEmbed()
+                    .setTitle(`VATSIM : ${ICAO}`)
+                    .setColor(successColor)
+                    .addField(`Call Sign`, `${decoded[0]}`, true)
+                    .addField(`CID`, `${decoded[1]}`, true)
+                    .addField(`Controller`, `${decoded[2]}`, true)
+                    .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                    .addField(`Frequency`, `${decoded[4]}`, true)
+                    // .addField(`ATIS`, `${decoded[35]}`, true)
+                    .setFooter(`Source: VATSIM API`);
+
+                  msg.channel.send(vatsimEmbed);
+                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                } else {
+                  let vatsimEmbed = new Discord.RichEmbed()
+                    .setTitle(`VATSIM : ${ICAO}`)
+                    .setColor(successColor)
+                    .addField(`Call Sign`, `${decoded[0]}`, true)
+                    .addField(`CID`, `${decoded[1]}`, true)
+                    .addField(`Controller`, `${decoded[2]}`, true)
+                    .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                    .addField(`Frequency`, `${decoded[4]}`, true)
+                    // .addField(`ATIS`, `${decoded[35]}`, true)
+                    .setFooter(`Source: VATSIM API`);
+
+                  msg.channel.send(vatsimEmbed);
+                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                }
+              });
+            }
+          }
+        });
+        if (!presentFlag) {
+          let ivaoErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`VATSIM : ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on VATSIM network`)
+            .setFooter(`Source: VATSIM API`);
+
+          msg.channel.send(ivaoErrorEmbed);
+          functions.logger(
+            `error`,
+            `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
+          );
+        }
+      });
+    }
+  }
+
   if (cmd == `${prefix}ivao`) {
 
-		if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+		if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
 			var file = fs.createWriteStream('whazzup.txt.gz');
-			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
+			var req = http.get(IVAOWhazzup, function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          functions.logger(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `IVAO Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            functions.logger(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `IVAO Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
@@ -324,8 +620,8 @@ bot.on("message", async msg => {
 							let servers = contents.split('!SERVERS')[1];
 
 							let generalArray = general.split('\n');
-							lastTimeUpdate = generalArray[3].split(' = ')[1];
-              functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+							lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+              functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
 							let clientsArray = clients.split('\n');
 							let presentFlag = false;
 							clientsArray.forEach(client => {
@@ -358,7 +654,7 @@ bot.on("message", async msg => {
 											.setColor(successColor)
 											.addField(`Call Sign`, `${decoded[0]}`, true)
 											.addField(`VID`, `${decoded[1]}`, true)
-											.addField(`Rating`, `${pilotRatings[decoded[41]]}`, true)
+											.addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}`, true)
 											.addField(`Departure`, `${decoded[11]}`, true)
 											.addField(`Destination`, `${decoded[13]}`, true)
 											.addField(`Transponder`, `${decoded[17]}`, true)
@@ -388,8 +684,8 @@ bot.on("message", async msg => {
 													.setColor(successColor)
 													.addField(`Call Sign`, `${decoded[0]}`, true)
 													.addField(`VID`, `${decoded[1]}`, true)
-													.addField(`Rating`, `${atcRatings[decoded[41]]}`, true)
-													.addField(`Position`, `${facilityTypes[decoded[18]]}`, true)
+													.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
+													.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 													.addField(`Frequency`, `${decoded[4]}`, true)
 													.addField(`ATIS`, `${decoded[35]}`, true)
 													.setFooter(`Source: IVAO API`);
@@ -398,12 +694,12 @@ bot.on("message", async msg => {
                         functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											} else {
 												let ivaoEmbed = new Discord.RichEmbed()
-													.setTitle(`IVAO : ${info.city} ${facilityTypes2[decoded[18]]}`)
+													.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]}`)
 													.setColor(successColor)
 													.addField(`Call Sign`, `${decoded[0]}`, true)
 													.addField(`VID`, `${decoded[1]}`, true)
-													.addField(`Rating`, `${atcRatings[decoded[41]]}`, true)
-													.addField(`Position`, `${facilityTypes[decoded[18]]}`, true)
+													.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
+													.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 													.addField(`Frequency`, `${decoded[4]}`, true)
 													.addField(`ATIS`, `${decoded[35]}`, true)
 													.setFooter(`Source: IVAO API`);
@@ -470,7 +766,7 @@ bot.on("message", async msg => {
 								.setColor(successColor)
 								.addField(`Call Sign`, `${decoded[0]}`, true)
 								.addField(`VID`, `${decoded[1]}`, true)
-								.addField(`Rating`, `${pilotRatings[decoded[41]]}`, true)
+								.addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}`, true)
 								.addField(`Departure`, `${decoded[11]}`, true)
 								.addField(`Destination`, `${decoded[13]}`, true)
 								.addField(`Transponder`, `${decoded[17]}`, true)
@@ -500,8 +796,8 @@ bot.on("message", async msg => {
 										.setColor(successColor)
 										.addField(`Call Sign`, `${decoded[0]}`, true)
 										.addField(`VID`, `${decoded[1]}`, true)
-										.addField(`Rating`, `${atcRatings[decoded[41]]}`, true)
-										.addField(`Position`, `${facilityTypes[decoded[18]]}`, true)
+										.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
+										.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 										.addField(`Frequency`, `${decoded[4]}`, true)
 										.addField(`ATIS`, `${decoded[35]}`, true)
 										.setFooter(`Source: IVAO API`);
@@ -510,12 +806,12 @@ bot.on("message", async msg => {
                   functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								} else {
 									let ivaoEmbed = new Discord.RichEmbed()
-										.setTitle(`IVAO : ${info.city} ${facilityTypes2[decoded[18]]}`)
+										.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]}`)
 										.setColor(successColor)
 										.addField(`Call Sign`, `${decoded[0]}`, true)
 										.addField(`VID`, `${decoded[1]}`, true)
-										.addField(`Rating`, `${atcRatings[decoded[41]]}`, true)
-										.addField(`Position`, `${facilityTypes[decoded[18]]}`, true)
+										.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
+										.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 										.addField(`Frequency`, `${decoded[4]}`, true)
 										.addField(`ATIS`, `${decoded[35]}`, true)
 										.setFooter(`Source: IVAO API`);
@@ -544,16 +840,16 @@ bot.on("message", async msg => {
   if (cmd == `${prefix}online`) {
     FIR = ICAO.substring(0,2);
     console.log(FIR);
-		if (parseInt(lastTimeUpdate, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+		if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
 			var file = fs.createWriteStream('whazzup.txt.gz');
-			var req = http.get('http://whazzup.ivao.aero/whazzup.txt.gz', function (response) {
+			var req = http.get(IVAOWhazzup, function (response) {
 				response.pipe(file);
 				response.on("end", () => {
-          functions.logger(`info`, `Whazzup downloaded`);
+          functions.logger(`info`, `IVAO Whazzup downloaded`);
 					const extract = inly(from, to);
 
 					extract.on('end', () => {
-            functions.logger(`info`, `Whazzup extracted`);
+            functions.logger(`info`, `IVAO Whazzup extracted`);
 						fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
 							contents = contents.split('!GENERAL')[1];
 							let general = contents.split('!CLIENTS')[0];
@@ -564,8 +860,8 @@ bot.on("message", async msg => {
 							let servers = contents.split('!SERVERS')[1];
 
 							let generalArray = general.split('\n');
-							lastTimeUpdate = generalArray[3].split(' = ')[1];
-              functions.logger(`info`, `Whazzup updated at ${lastTimeUpdate}`);
+							lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+              functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
 							let clientsArray = clients.split('\n');
 
               let presentFlag = false;
@@ -578,7 +874,7 @@ bot.on("message", async msg => {
                     let temp = {
                       callSign  : decoded[0],
                       vid       : decoded[1],
-                      position  : facilityTypes[decoded[18]],
+                      position  : facilityTypesIVAO[decoded[18]],
                       frequency : decoded[4],
                     }
                     found.push(temp);
@@ -632,7 +928,7 @@ bot.on("message", async msg => {
               temp = {
                 callSign  : decoded[0],
                 vid       : decoded[1],
-                position  : facilityTypes[decoded[18]],
+                position  : facilityTypesIVAO[decoded[18]],
                 frequency : decoded[4],
               }
               found.push(temp);
@@ -1663,6 +1959,7 @@ bot.on("message", async msg => {
         .addField(`${prefix}icao [ICAO]`, `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`)
         .addField(`${prefix}ivao [CALLSIGN]`, `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`)
         .addField(`${prefix}online [FIR]`, `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`)
+        .addField(`${prefix}vatsim [CALLSIGN]`, `Example \"${prefix}vatsim AIC001\" or \"${prefix}vatsim VIDP_TWR\". Gives you information about the chosen call sign on the VATSIM network.`)
         .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
         .addField(`${prefix}zulu [ICAO] [Local Time]`, `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`)
         .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
@@ -1693,6 +1990,7 @@ bot.on("message", async msg => {
         .addField(`${prefix}icao [ICAO]`, `Przykład \"${prefix}icao EPWA\". Podaje informacje na temat wybranego lotniska.`)
         .addField(`${prefix}ivao [CALLSIGN]`, `Przykład \"${prefix}ivao LOT001\" or \"${prefix}ivao EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci IVAO.`)
         .addField(`${prefix}online [FIR]`, `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`)
+        .addField(`${prefix}vatsim [CALLSIGN]`, `Przykład \"${prefix}vatsim LOT001\" or \"${prefix}vatsim EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci VATSIM.`)
         .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
         .addField(`${prefix}zulu [ICAO] [Czas Lokalny]`, `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`)
         .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
