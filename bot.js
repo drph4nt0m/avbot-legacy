@@ -74,6 +74,7 @@ const avwxHeaders = {Authorization: process.env.AVWX_TOKEN}
 const routeAPI = "https://api.flightplandatabase.com";
 
 const IVAOWhazzup = 'http://whazzup.ivao.aero/whazzup.txt.gz';
+const IVAOMapURL = 'https://webeye.ivao.aero'
 
 const cwd = process.cwd();
 const name = 'whazzup.txt.gz';
@@ -650,7 +651,7 @@ bot.on("message", async msg => {
 											eetm = decoded[25];
 										}
 										let ivaoEmbed = new Discord.RichEmbed()
-											.setTitle(`IVAO : ${ICAO}`)
+											.setTitle(`IVAO : ${ICAO} (open on Webeye)`)
 											.setColor(successColor)
 											.addField(`Call Sign`, `${decoded[0]}`, true)
 											.addField(`VID`, `${decoded[1]}`, true)
@@ -667,7 +668,8 @@ bot.on("message", async msg => {
 											.addField(`Departure Time`, `${dt} Zulu`, true)
 											.addField(`EET`, `${eeth}:${eetm}`, true)
 											.addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
-											.addField(`Route`, `${decoded[30]}`, true)
+                      .addField(`Route`, `${decoded[30]}`, true)
+                      .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 											.setFooter(`Source: IVAO API`);
 
                     msg.channel.send(ivaoEmbed);
@@ -680,28 +682,30 @@ bot.on("message", async msg => {
 											let info = JSON.parse(body);
 											if (info.error) {
 												let ivaoEmbed = new Discord.RichEmbed()
-													.setTitle(`IVAO : ${ICAO}`)
+													.setTitle(`IVAO : ${ICAO} (open on Webeye)`)
 													.setColor(successColor)
 													.addField(`Call Sign`, `${decoded[0]}`, true)
 													.addField(`VID`, `${decoded[1]}`, true)
 													.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
 													.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 													.addField(`Frequency`, `${decoded[4]}`, true)
-													.addField(`ATIS`, `${decoded[35]}`, true)
+                          .addField(`ATIS`, `${decoded[35]}`, true)
+                          .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 													.setFooter(`Source: IVAO API`);
 
                         msg.channel.send(ivaoEmbed);
                         functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 											} else {
 												let ivaoEmbed = new Discord.RichEmbed()
-													.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]}`)
+													.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]} (open on Webeye)`)
 													.setColor(successColor)
 													.addField(`Call Sign`, `${decoded[0]}`, true)
 													.addField(`VID`, `${decoded[1]}`, true)
 													.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
 													.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 													.addField(`Frequency`, `${decoded[4]}`, true)
-													.addField(`ATIS`, `${decoded[35]}`, true)
+                          .addField(`ATIS`, `${decoded[35]}`, true)
+                          .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 													.setFooter(`Source: IVAO API`);
 
                         msg.channel.send(ivaoEmbed);
@@ -762,7 +766,7 @@ bot.on("message", async msg => {
 								eetm = decoded[25];
 							}
 							let ivaoEmbed = new Discord.RichEmbed()
-								.setTitle(`IVAO : ${ICAO}`)
+								.setTitle(`IVAO : ${ICAO} (open on Webeye)`)
 								.setColor(successColor)
 								.addField(`Call Sign`, `${decoded[0]}`, true)
 								.addField(`VID`, `${decoded[1]}`, true)
@@ -779,7 +783,8 @@ bot.on("message", async msg => {
 								.addField(`Departure Time`, `${dt} Zulu`, true)
 								.addField(`EET`, `${eeth}:${eetm}`, true)
 								.addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
-								.addField(`Route`, `${decoded[30]}`, true)
+                .addField(`Route`, `${decoded[30]}`, true)
+                .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 								.setFooter(`Source: IVAO API`);
 
               msg.channel.send(ivaoEmbed);
@@ -792,28 +797,30 @@ bot.on("message", async msg => {
 								let info = JSON.parse(body);
 								if (info.error) {
 									let ivaoEmbed = new Discord.RichEmbed()
-										.setTitle(`IVAO : ${ICAO}`)
+										.setTitle(`IVAO : ${ICAO} (open on Webeye)`)
 										.setColor(successColor)
 										.addField(`Call Sign`, `${decoded[0]}`, true)
 										.addField(`VID`, `${decoded[1]}`, true)
 										.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
 										.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 										.addField(`Frequency`, `${decoded[4]}`, true)
-										.addField(`ATIS`, `${decoded[35]}`, true)
+                    .addField(`ATIS`, `${decoded[35]}`, true)
+                    .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 										.setFooter(`Source: IVAO API`);
 
                   msg.channel.send(ivaoEmbed);
                   functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
 								} else {
 									let ivaoEmbed = new Discord.RichEmbed()
-										.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]}`)
+										.setTitle(`IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]} (open on Webeye)`)
 										.setColor(successColor)
 										.addField(`Call Sign`, `${decoded[0]}`, true)
 										.addField(`VID`, `${decoded[1]}`, true)
 										.addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
 										.addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
 										.addField(`Frequency`, `${decoded[4]}`, true)
-										.addField(`ATIS`, `${decoded[35]}`, true)
+                    .addField(`ATIS`, `${decoded[35]}`, true)
+                    .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
 										.setFooter(`Source: IVAO API`);
 
                   msg.channel.send(ivaoEmbed);
