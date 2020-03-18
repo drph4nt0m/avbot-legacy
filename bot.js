@@ -408,7 +408,6 @@ bot.on('guildDelete', guild => {
 });
 
 bot.on('message', async msg => {
-  console.log('hello');
   if (msg.author.bot || !msg.guild) return;
 
   Sentry.configureScope(function(scope) {
@@ -1502,8 +1501,10 @@ bot.on('message', async msg => {
           );
         }
       } else {
-        let raw = taf.raw;
-        let readable = `**Station : ** `;
+        let raw = `**Raw Report**\n ${taf.raw}\n`;
+        let readable = `${raw}\n**Readable Report**\n`;
+
+        readable += `**Station : ** `;
 
         if (taf.info.icao) {
           readable += `${taf.info.icao}`;
@@ -1548,9 +1549,7 @@ bot.on('message', async msg => {
         let tafEmbed = new Discord.RichEmbed()
           .setTitle(`TAF for ${ICAO}`)
           .setColor(successColor)
-          // .setDescription(readable)
-          .addField(`Raw Report`, raw)
-          .addField(`Readable Report`, readable)
+          .setDescription(readable)
           .setFooter(
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
