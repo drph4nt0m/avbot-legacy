@@ -20,6 +20,8 @@ dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
+Sentry.configureScope(function(scope) {});
+
 process
   .on('unhandledRejection', (reason, p) => {
     functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
@@ -406,15 +408,8 @@ bot.on('guildDelete', guild => {
 });
 
 bot.on('message', async msg => {
-  console.log('hello')
+  console.log('hello');
   if (msg.author.bot || !msg.guild) return;
-
-  let sentryDataUser = {
-    author_name: msg.author.tag,
-    message: msg.content
-  };
-
-  let sentryDataGuild = { guild_id: msg.guild.id, guild_name: msg.guild.name };
 
   Sentry.configureScope(function(scope) {
     scope.setUser(msg.author);
