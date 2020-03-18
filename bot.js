@@ -20,6 +20,14 @@ dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
+process
+  .on('unhandledRejection', (reason, p) => {
+    functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
+  })
+  .on('uncaughtException', err => {
+    functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
+  });
+
 const app = express();
 
 app.get('/', (req, res) => {
@@ -160,6 +168,7 @@ dbl.on('error', e => functions.logger(`error`, `${e}`));
 bot.on('ready', async () => {
   let start_time = moment.tz(bot.readyAt, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   functions.logger(`info`, `AvBot v2 is online`);
+  Sentry.configureScope(function(scope) {});
 
   let guildIds = bot.guilds.map(e => e.id);
   let guildNames = bot.guilds.map(e => e.name);
@@ -315,6 +324,8 @@ bot.on('ready', async () => {
 });
 
 bot.on('guildCreate', guild => {
+  Sentry.configureScope(function(scope) {});
+
   functions.logger(
     `info`,
     `New guild added ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`
@@ -360,6 +371,8 @@ bot.on('guildCreate', guild => {
 });
 
 bot.on('guildDelete', guild => {
+  Sentry.configureScope(function(scope) {});
+
   functions.logger(
     `info`,
     `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild removed had ${guild.memberCount} members!`
@@ -388,12 +401,29 @@ bot.on('guildDelete', guild => {
 bot.on('message', async msg => {
   if (msg.author.bot) return;
 
+  let sentryData = {
+    guild_id: null,
+    guild_name: null,
+    author_name: msg.author.tag,
+    message: msg.content
+  };
+  if (msg.guild) {
+    sentryData = {
+      guild_id: msg.guild.id,
+      guild_name: msg.guild.name,
+      author_name: msg.author.tag,
+      message: msg.content
+    };
+  }
   Sentry.configureScope(function(scope) {
-    scope.setUser({ guild: msg.guild.name, user: msg.author.tag, message: msg.content });
+    scope.setUser(sentryData);
   });
 
   let currentGuild = null;
   currentGuild = await Guild.findOne({ guild_id: msg.guild.id });
+  if (!currentGuild) {
+    return;
+  }
   prefix = currentGuild.prefix;
   language = currentGuild.language;
   premium = currentGuild.premium;
@@ -1499,7 +1529,7 @@ bot.on('message', async msg => {
     notams(`${ICAO}`, {
       format: 'DOMESTIC'
     }).then(result => {
-      if (result[0].notams[1]) {
+      if (result && result[0] && result[0].notams[1]) {
         let notamEmbed = new Discord.RichEmbed()
           .setTitle(`NOTAMs for ${result[0].icao}`)
           .setColor(successColor)
