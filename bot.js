@@ -26,9 +26,10 @@ process
   .on('unhandledRejection', (reason, p) => {
     functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
   })
-  .on('uncaughtException', err => {
-    functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
-  });
+.on('uncaughtException', err => {
+  functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
+  process.exit(1);
+});
 
 const app = express();
 
@@ -378,6 +379,14 @@ bot.on('guildCreate', guild => {
 });
 
 bot.on('guildDelete', guild => {
+  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+    type: 'WATCHING'
+  });
+
+  if (guild.deleted) {
+    return true;
+  }
+
   Sentry.configureScope(function(scope) {
     scope.setContext('GUILD', guild);
   });
@@ -386,10 +395,6 @@ bot.on('guildDelete', guild => {
     `info`,
     `Guild Remove ${guild.name}, (guilds id is ${guild.id}). The guild removed had ${guild.memberCount} members!`
   );
-
-  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
-    type: 'WATCHING'
-  });
 
   let time_join = moment.tz(guild.joined_at, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   let owner = bot.users.find(user => user.id === guild.ownerID);
@@ -2411,4 +2416,11 @@ bot.on('message', async msg => {
   }
 });
 
-bot.login(process.env.token);
+bot.login(process.env.token).then(
+  token => {},
+  error => {
+    console.log(error);
+    functions.logger(`error`, error);
+    process.exit(1);
+  }
+);
