@@ -406,6 +406,7 @@ bot.on('guildDelete', guild => {
 });
 
 bot.on('message', async msg => {
+  console.log('hello')
   if (msg.author.bot || !msg.guild) return;
 
   let sentryDataUser = {
