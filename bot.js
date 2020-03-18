@@ -328,7 +328,9 @@ bot.on('ready', async () => {
 });
 
 bot.on('guildCreate', guild => {
-  Sentry.configureScope(function(scope) {});
+  Sentry.configureScope(function(scope) {
+    scope.setContext('GUILD', guild);
+  });
 
   functions.logger(
     `info`,
@@ -361,7 +363,7 @@ bot.on('guildCreate', guild => {
     .addField(`Name`, `${guild.name}`)
     .addField(`ID`, `${guild.id}`)
     .addField(`Owner ID`, `${guild.ownerID}`)
-    .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
+    // .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
     .addField(`Members`, `${guild.memberCount}`)
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Joined at ${time_join}`);
@@ -418,7 +420,6 @@ bot.on('message', async msg => {
     scope.setContext('MESSAGE', msg);
   });
 
-  undefinedFunc();
   let currentGuild = await Guild.findOne({ guild_id: msg.guild.id });
   if (!currentGuild) {
     return;
