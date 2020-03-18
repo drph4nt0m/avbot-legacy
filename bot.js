@@ -363,7 +363,7 @@ bot.on('guildCreate', guild => {
     .addField(`Name`, `${guild.name}`)
     .addField(`ID`, `${guild.id}`)
     .addField(`Owner ID`, `${guild.ownerID}`)
-    // .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
+    .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
     .addField(`Members`, `${guild.memberCount}`)
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Joined at ${time_join}`);
@@ -396,7 +396,7 @@ bot.on('guildDelete', guild => {
     .addField(`Name`, `${guild.name}`)
     .addField(`ID`, `${guild.id}`)
     .addField(`Owner ID`, `${guild.ownerID}`)
-    .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
+    // .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
     .addField(`Members`, `${guild.memberCount}`)
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Removed at ${time_join}`);
