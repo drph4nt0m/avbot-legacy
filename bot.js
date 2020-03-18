@@ -172,7 +172,6 @@ dbl.on('error', e => functions.logger(`error`, `${e}`));
 bot.on('ready', async () => {
   let start_time = moment.tz(bot.readyAt, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   functions.logger(`info`, `AvBot v2 is online`);
-  Sentry.configureScope(function(scope) {});
 
   let guildIds = bot.guilds.map(e => e.id);
   let guildNames = bot.guilds.map(e => e.name);
@@ -377,7 +376,9 @@ bot.on('guildCreate', guild => {
 });
 
 bot.on('guildDelete', guild => {
-  Sentry.configureScope(function(scope) {});
+  Sentry.configureScope(function(scope) {
+    scope.setContext('GUILD', guild);
+  });
 
   functions.logger(
     `info`,
