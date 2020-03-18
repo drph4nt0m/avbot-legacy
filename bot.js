@@ -76,6 +76,10 @@ var Guild = mongoose.model('guilds', guildSchema);
 
 let prefix = '!';
 let language = 'en';
+let premium = {
+  allowed: false,
+  till: moment.now()
+};
 const successColor = '#1a8fe3';
 const errorColor = '#bf3100';
 const avwx = 'https://avwx.rest/api/';
@@ -399,28 +403,23 @@ bot.on('guildDelete', guild => {
 });
 
 bot.on('message', async msg => {
-  if (msg.author.bot) return;
+  if (msg.author.bot || !msg.guild) return;
 
-  let sentryData = {
-    guild_id: null,
-    guild_name: null,
+  let sentryDataUser = {
     author_name: msg.author.tag,
     message: msg.content
   };
-  if (msg.guild) {
-    sentryData = {
-      guild_id: msg.guild.id,
-      guild_name: msg.guild.name,
-      author_name: msg.author.tag,
-      message: msg.content
-    };
-  }
+
+  let sentryDataGuild = { guild_id: msg.guild.id, guild_name: msg.guild.name };
+
   Sentry.configureScope(function(scope) {
-    scope.setUser(sentryData);
+    scope.setUser(msg.author);
+    scope.setContext('GUILD', msg.guild);
+    scope.setContext('MESSAGE', msg);
   });
 
-  let currentGuild = null;
-  currentGuild = await Guild.findOne({ guild_id: msg.guild.id });
+  undefinedFunc();
+  let currentGuild = await Guild.findOne({ guild_id: msg.guild.id });
   if (!currentGuild) {
     return;
   }
@@ -546,8 +545,14 @@ bot.on('message', async msg => {
 
                   var url = `${avwx}station/${ICAO.substring(0, 4)}`;
                   request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-                    let info = JSON.parse(body);
-                    if (info.error) {
+                    let noContent = false;
+                    let info = { error: false };
+                    try {
+                      info = JSON.parse(body);
+                    } catch (error) {
+                      noContent = true;
+                    }
+                    if (noContent || info.error) {
                       let vatsimEmbed = new Discord.RichEmbed()
                         .setTitle(`VATSIM : ${ICAO}`)
                         .setColor(successColor)
@@ -669,8 +674,14 @@ bot.on('message', async msg => {
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
               request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-                let info = JSON.parse(body);
-                if (info.error) {
+                let noContent = false;
+                let info = { error: false };
+                try {
+                  info = JSON.parse(body);
+                } catch (error) {
+                  noContent = true;
+                }
+                if (noContent || info.error) {
                   let vatsimEmbed = new Discord.RichEmbed()
                     .setTitle(`VATSIM : ${ICAO}`)
                     .setColor(successColor)
@@ -799,8 +810,14 @@ bot.on('message', async msg => {
 
                     var url = `${avwx}station/${ICAO.substring(0, 4)}`;
                     request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-                      let info = JSON.parse(body);
-                      if (info.error) {
+                      let noContent = false;
+                      let info = { error: false };
+                      try {
+                        info = JSON.parse(body);
+                      } catch (error) {
+                        noContent = true;
+                      }
+                      if (noContent || info.error) {
                         let ivaoEmbed = new Discord.RichEmbed()
                           .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                           .setColor(successColor)
@@ -927,8 +944,14 @@ bot.on('message', async msg => {
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
               request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-                let info = JSON.parse(body);
-                if (info.error) {
+                let noContent = false;
+                let info = { error: false };
+                try {
+                  info = JSON.parse(body);
+                } catch (error) {
+                  noContent = true;
+                }
+                if (noContent || info.error) {
                   let ivaoEmbed = new Discord.RichEmbed()
                     .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                     .setColor(successColor)
@@ -1254,8 +1277,14 @@ bot.on('message', async msg => {
     let url = avwx + `metar/${ICAO}?options=info,translate,speech`;
 
     request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-      let metar = JSON.parse(body);
-      if (metar.error) {
+      let noContent = false;
+      let metar = { error: false };
+      try {
+        metar = JSON.parse(body);
+      } catch (error) {
+        noContent = true;
+      }
+      if (noContent || metar.error) {
         if (icao[ICAO]) {
           let metarErrorEmbed = new Discord.RichEmbed()
             .setTitle(`METAR for ${ICAO}`)
@@ -1438,8 +1467,14 @@ bot.on('message', async msg => {
     let url = avwx + `taf/${ICAO}?options=info,translate,speech`;
 
     request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-      let taf = JSON.parse(body);
-      if (taf.error) {
+      let noContent = false;
+      let taf = { error: false };
+      try {
+        taf = JSON.parse(body);
+      } catch (error) {
+        noContent = true;
+      }
+      if (noContent || taf.error) {
         if (icao[ICAO]) {
           let tafErrorEmbed = new Discord.RichEmbed()
             .setTitle(`TAF for ${ICAO}`)
@@ -1574,8 +1609,14 @@ bot.on('message', async msg => {
     let url = avwx + `station/${ICAO}`;
 
     request({ url: url, headers: avwxHeaders }, function(err, response, body) {
-      let info = JSON.parse(body);
-      if (info.error) {
+      let noContent = false;
+      let info = { error: false };
+      try {
+        info = JSON.parse(body);
+      } catch (error) {
+        noContent = true;
+      }
+      if (noContent || info.error) {
         if (icao[ICAO]) {
           let icaoErrorEmbed = new Discord.RichEmbed()
             .setTitle(`${ICAO}`)
@@ -1770,9 +1811,16 @@ bot.on('message', async msg => {
     let chartAvailable = true;
 
     request({ url: metarURL, headers: avwxHeaders }, function(err, response, body) {
-      let metar = JSON.parse(body);
+      let rawMetar = '';
       let readableMetar = '';
-      if (metar.error) {
+      let noContent = false;
+      let metar = { error: false };
+      try {
+        metar = JSON.parse(body);
+      } catch (error) {
+        noContent = true;
+      }
+      if (noContent || metar.error) {
         metarAvailable = false;
       } else {
         rawMetar = metar.raw;
