@@ -1146,7 +1146,7 @@ bot.on('message', async msg => {
     if (args.length === 1) return;
 
     request(`https://vau.aero/navdb/chart/${ICAO}.pdf`, (err, res, body) => {
-      if (res.statusCode != 404) {
+      if (res && res.statusCode != 404) {
         let chartsEmbed = new Discord.RichEmbed()
           .setTitle(`Chart for ${ICAO}`)
           .setColor(successColor)
@@ -1347,9 +1347,11 @@ bot.on('message', async msg => {
 
         readable += `\n`;
 
-        readable += `**Observed at : ** ${moment
-          .tz(new Date(metar.time.dt.replace('T', ' ')), 'Etc/Zulu')
-          .format('YYYY-MM-DD HH:mm:ss')} Z\n`;
+        if (metar.time) {
+          readable += `**Observed at : ** ${moment
+            .tz(new Date(metar.time.dt.replace('T', ' ')), 'Etc/Zulu')
+            .format('YYYY-MM-DD HH:mm:ss')} Z\n`;
+        }
 
         if (metar.wind_speed) {
           readable += `**Wind : **`;
@@ -1427,16 +1429,16 @@ bot.on('message', async msg => {
         }
 
         if (metar.translate.clouds) {
-          readable += `**Sky Condition : **\n`;
-          let clouds = metar.translate.clouds.split('-');
-          if (clouds.length == 1) {
-            readable += `${clouds[0]}\n`;
-          } else {
-            clouds = clouds[0].split(', ');
-            clouds.forEach(cloud => {
-              readable += `${cloud}\n`;
-            });
-          }
+          readable += `**Sky Condition : ** ${metar.translate.clouds} \n`;
+          // let clouds = metar.translate.clouds.split('-');
+          // if (clouds.length == 1) {
+          //   readable += `${clouds[0]}\n`;
+          // } else {
+          //   clouds = clouds[0].split(', ');
+          //   clouds.forEach(cloud => {
+          //     readable += `${cloud}\n`;
+          //   });
+          // }
         }
 
         if (metar.translate.other) {
@@ -1452,6 +1454,7 @@ bot.on('message', async msg => {
           .setColor(successColor)
           .addField('Raw Report', raw)
           .addField('Readable Report', readable)
+          // .addField('Readable Report', metar.speech)
           .setFooter(
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
@@ -1502,10 +1505,8 @@ bot.on('message', async msg => {
           );
         }
       } else {
-        let raw = `**Raw Report**\n ${taf.raw}\n`;
-        let readable = `${raw}\n **Readable Report**\n`;
-
-        readable += `**Station : ** `;
+        let raw = taf.raw;
+        let readable = `**Station : ** `;
 
         if (taf.info.icao) {
           readable += `${taf.info.icao}`;
@@ -1539,16 +1540,20 @@ bot.on('message', async msg => {
 
         readable += `\n`;
 
-        readable += `**Observed at : ** ${moment
-          .tz(new Date(taf.time.dt.replace('T', ' ')), 'Etc/Zulu')
-          .format('YYYY-MM-DD HH:mm:ss')} Z\n`;
+        if (taf.time) {
+          readable += `**Observed at : ** ${moment
+            .tz(new Date(taf.time.dt.replace('T', ' ')), 'Etc/Zulu')
+            .format('YYYY-MM-DD HH:mm:ss')} Z\n`;
+        }
 
-        readable += `**Report : ** \n${taf.speech}`;
+        readable += `**Report : ** ${taf.speech}`;
 
         let tafEmbed = new Discord.RichEmbed()
           .setTitle(`TAF for ${ICAO}`)
           .setColor(successColor)
-          .setDescription(readable)
+          // .setDescription(readable)
+          .addField(`Raw Report`, raw)
+          .addField(`Readable Report`, readable)
           .setFooter(
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
