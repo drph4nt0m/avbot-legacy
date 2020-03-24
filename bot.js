@@ -64,7 +64,11 @@ console.log(`Environment: ${app.get('env')}`);
 //   ]
 // });
 
-mongoose.connect(process.env.M_LAB, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
+mongoose.connect(process.env.M_LAB, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true
+});
 
 var guildSchema = new mongoose.Schema({
   guild_id: { type: String, unique: true },
@@ -223,12 +227,16 @@ bot.on('ready', async () => {
     .setColor(successColor)
     .setFooter(`${moment.tz(moment.utc(), 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')}`);
 
-  bot.channels.find(channel => channel.id === process.env.RESTART_CHANNEL).send(restartEmbed);
-
-  bot.user.setStatus('online');
-  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
-    type: 'WATCHING'
-  });
+  bot.channels
+    .find(channel => channel.id === process.env.RESTART_CHANNEL)
+    .send(restartEmbed)
+    .then(() => {
+      bot.user.setStatus('online');
+      bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+        type: 'WATCHING'
+      });
+    })
+    .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
   setInterval(() => {
     dbl.postStats(bot.guilds.size, null, null);
@@ -357,7 +365,8 @@ bot.on('guildCreate', guild => {
     .filter(c => c.type === 'text')
     .first()
     .send(welcomeEmbed)
-    .then(functions.logger(`info`, `Sent Welcome Message to ${guild.name}.`));
+    .then(functions.logger(`info`, `Sent Welcome Message to ${guild.name}.`))
+    .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
   let time_join = moment.tz(guild.joined_at, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   let owner = bot.users.find(user => user.id === guild.ownerID);
@@ -372,7 +381,11 @@ bot.on('guildCreate', guild => {
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Joined at ${time_join}`);
 
-  bot.channels.find(channel => channel.id === process.env.GUILDS_CHANNEL).send(newGuildEmbed);
+  bot.channels
+    .find(channel => channel.id === process.env.GUILDS_CHANNEL)
+    .send(newGuildEmbed)
+    .then()
+    .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
   Guild.create({ guild_id: guild.id, guild_name: guild.name }, (err, guild) => {
     if (err) console.log(err);
@@ -411,7 +424,11 @@ bot.on('guildDelete', guild => {
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Removed at ${time_join}`);
 
-  bot.channels.find(channel => channel.id === process.env.GUILDS_CHANNEL).send(removeGuildEmbed);
+  bot.channels
+    .find(channel => channel.id === process.env.GUILDS_CHANNEL)
+    .send(removeGuildEmbed)
+    .then()
+    .catch(error => functions.logger(`error`, JSON.stringify(error)));
 });
 
 bot.on('message', async msg => {
@@ -542,8 +559,15 @@ bot.on('message', async msg => {
                     .addField(`Route`, `${decoded[30]}`, true)
                     .setFooter(`Source: VATSIM API`);
 
-                  msg.channel.send(vatsimEmbed);
-                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                  msg.channel
+                    .send(vatsimEmbed)
+                    .then(() =>
+                      functions.logger(
+                        `info`,
+                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                      )
+                    )
+                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
                 } else if (decoded[3] == 'ATC') {
                   presentFlag = true;
 
@@ -568,11 +592,15 @@ bot.on('message', async msg => {
                         // .addField(`ATIS`, `${decoded[35]}`, true)
                         .setFooter(`Source: VATSIM API`);
 
-                      msg.channel.send(vatsimEmbed);
-                      functions.logger(
-                        `info`,
-                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
-                      );
+                      msg.channel
+                        .send(vatsimEmbed)
+                        .then(() =>
+                          functions.logger(
+                            `info`,
+                            `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                          )
+                        )
+                        .catch(error => functions.logger(`error`, JSON.stringify(error)));
                     } else {
                       let vatsimEmbed = new Discord.RichEmbed()
                         .setTitle(`VATSIM : ${ICAO}`)
@@ -585,11 +613,15 @@ bot.on('message', async msg => {
                         // .addField(`ATIS`, `${decoded[35]}`, true)
                         .setFooter(`Source: VATSIM API`);
 
-                      msg.channel.send(vatsimEmbed);
-                      functions.logger(
-                        `info`,
-                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
-                      );
+                      msg.channel
+                        .send(vatsimEmbed)
+                        .then(() =>
+                          functions.logger(
+                            `info`,
+                            `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                          )
+                        )
+                        .catch(error => functions.logger(`error`, JSON.stringify(error)));
                     }
                   });
                 }
@@ -602,11 +634,15 @@ bot.on('message', async msg => {
                 .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on VATSIM network`)
                 .setFooter(`Source: VATSIM API`);
 
-              msg.channel.send(ivaoErrorEmbed);
-              functions.logger(
-                `error`,
-                `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
-              );
+              msg.channel
+                .send(ivaoErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `error`,
+                    `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
+                  )
+                )
+                .catch(error => functions.logger(`error`, JSON.stringify(error)));
             }
           });
         });
@@ -671,8 +707,12 @@ bot.on('message', async msg => {
                 .addField(`Route`, `${decoded[30]}`, true)
                 .setFooter(`Source: VATSIM API`);
 
-              msg.channel.send(vatsimEmbed);
-              functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+              msg.channel
+                .send(vatsimEmbed)
+                .then(() =>
+                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`)
+                )
+                .catch(error => functions.logger(`error`, JSON.stringify(error)));
             } else if (decoded[3] == 'ATC') {
               presentFlag = true;
 
@@ -697,8 +737,15 @@ bot.on('message', async msg => {
                     // .addField(`ATIS`, `${decoded[35]}`, true)
                     .setFooter(`Source: VATSIM API`);
 
-                  msg.channel.send(vatsimEmbed);
-                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                  msg.channel
+                    .send(vatsimEmbed)
+                    .then(() =>
+                      functions.logger(
+                        `info`,
+                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                      )
+                    )
+                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
                 } else {
                   let vatsimEmbed = new Discord.RichEmbed()
                     .setTitle(`VATSIM : ${ICAO}`)
@@ -711,8 +758,15 @@ bot.on('message', async msg => {
                     // .addField(`ATIS`, `${decoded[35]}`, true)
                     .setFooter(`Source: VATSIM API`);
 
-                  msg.channel.send(vatsimEmbed);
-                  functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`);
+                  msg.channel
+                    .send(vatsimEmbed)
+                    .then(() =>
+                      functions.logger(
+                        `info`,
+                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                      )
+                    )
+                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
                 }
               });
             }
@@ -725,11 +779,15 @@ bot.on('message', async msg => {
             .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on VATSIM network`)
             .setFooter(`Source: VATSIM API`);
 
-          msg.channel.send(ivaoErrorEmbed);
-          functions.logger(
-            `error`,
-            `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
-          );
+          msg.channel
+            .send(ivaoErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `error`,
+                `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
@@ -807,8 +865,15 @@ bot.on('message', async msg => {
                       .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                       .setFooter(`Source: IVAO API`);
 
-                    msg.channel.send(ivaoEmbed);
-                    functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                    msg.channel
+                      .send(ivaoEmbed)
+                      .then(() =>
+                        functions.logger(
+                          `info`,
+                          `IVAO details for ${ICAO} sent to ${msg.author.tag}`
+                        )
+                      )
+                      .catch(error => functions.logger(`error`, JSON.stringify(error)));
                   } else if (decoded[3] == 'ATC') {
                     presentFlag = true;
 
@@ -834,11 +899,15 @@ bot.on('message', async msg => {
                           .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                           .setFooter(`Source: IVAO API`);
 
-                        msg.channel.send(ivaoEmbed);
-                        functions.logger(
-                          `info`,
-                          `IVAO details for ${ICAO} sent to ${msg.author.tag}`
-                        );
+                        msg.channel
+                          .send(ivaoEmbed)
+                          .then(() =>
+                            functions.logger(
+                              `info`,
+                              `IVAO details for ${ICAO} sent to ${msg.author.tag}`
+                            )
+                          )
+                          .catch(error => functions.logger(`error`, JSON.stringify(error)));
                       } else {
                         let ivaoEmbed = new Discord.RichEmbed()
                           .setTitle(
@@ -856,11 +925,15 @@ bot.on('message', async msg => {
                           .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                           .setFooter(`Source: IVAO API`);
 
-                        msg.channel.send(ivaoEmbed);
-                        functions.logger(
-                          `info`,
-                          `IVAO details for ${ICAO} sent to ${msg.author.tag}`
-                        );
+                        msg.channel
+                          .send(ivaoEmbed)
+                          .then(() =>
+                            functions.logger(
+                              `info`,
+                              `IVAO details for ${ICAO} sent to ${msg.author.tag}`
+                            )
+                          )
+                          .catch(error => functions.logger(`error`, JSON.stringify(error)));
                       }
                     });
                   }
@@ -873,11 +946,15 @@ bot.on('message', async msg => {
                   .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on IVAO network`)
                   .setFooter(`Source: IVAO API`);
 
-                msg.channel.send(ivaoErrorEmbed);
-                functions.logger(
-                  `error`,
-                  `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
-                );
+                msg.channel
+                  .send(ivaoErrorEmbed)
+                  .then(() =>
+                    functions.logger(
+                      `error`,
+                      `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
+                    )
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           });
@@ -941,8 +1018,12 @@ bot.on('message', async msg => {
                 .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                 .setFooter(`Source: IVAO API`);
 
-              msg.channel.send(ivaoEmbed);
-              functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+              msg.channel
+                .send(ivaoEmbed)
+                .then(() =>
+                  functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
+                )
+                .catch(error => functions.logger(`error`, JSON.stringify(error)));
             } else if (decoded[3] == 'ATC') {
               presentFlag = true;
 
@@ -968,8 +1049,12 @@ bot.on('message', async msg => {
                     .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                     .setFooter(`Source: IVAO API`);
 
-                  msg.channel.send(ivaoEmbed);
-                  functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                  msg.channel
+                    .send(ivaoEmbed)
+                    .then(() =>
+                      functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
+                    )
+                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
                 } else {
                   let ivaoEmbed = new Discord.RichEmbed()
                     .setTitle(
@@ -985,8 +1070,12 @@ bot.on('message', async msg => {
                     .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                     .setFooter(`Source: IVAO API`);
 
-                  msg.channel.send(ivaoEmbed);
-                  functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`);
+                  msg.channel
+                    .send(ivaoEmbed)
+                    .then(() =>
+                      functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
+                    )
+                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
                 }
               });
             }
@@ -999,11 +1088,15 @@ bot.on('message', async msg => {
             .setDescription(`No Pilot/ATC with Call Sign '${ICAO}' is online on IVAO network`)
             .setFooter(`Source: IVAO API`);
 
-          msg.channel.send(ivaoErrorEmbed);
-          functions.logger(
-            `error`,
-            `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
-          );
+          msg.channel
+            .send(ivaoErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `error`,
+                `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
@@ -1066,11 +1159,15 @@ bot.on('message', async msg => {
                   );
                 });
 
-                msg.channel.send(onlineEmbed);
-                functions.logger(
-                  `info`,
-                  `Online details for ${ICAO} FIR sent to ${msg.author.tag}`
-                );
+                msg.channel
+                  .send(onlineEmbed)
+                  .then(() =>
+                    functions.logger(
+                      `info`,
+                      `Online details for ${ICAO} FIR sent to ${msg.author.tag}`
+                    )
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               } else {
                 let onlineErrorEmbed = new Discord.RichEmbed()
                   .setTitle(`IVAO : ${ICAO}`)
@@ -1078,11 +1175,15 @@ bot.on('message', async msg => {
                   .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
                   .setFooter(`Source: IVAO API`);
 
-                msg.channel.send(onlineErrorEmbed);
-                functions.logger(
-                  `error`,
-                  `Online details requested by ${msg.author.tag} for ${ICAO} not available`
-                );
+                msg.channel
+                  .send(onlineErrorEmbed)
+                  .then(() =>
+                    functions.logger(
+                      `error`,
+                      `Online details requested by ${msg.author.tag} for ${ICAO} not available`
+                    )
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           });
@@ -1126,8 +1227,12 @@ bot.on('message', async msg => {
             onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
           });
 
-          msg.channel.send(onlineEmbed);
-          functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`);
+          msg.channel
+            .send(onlineEmbed)
+            .then(() =>
+              functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`)
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let onlineErrorEmbed = new Discord.RichEmbed()
             .setTitle(`IVAO : ${ICAO}`)
@@ -1135,11 +1240,15 @@ bot.on('message', async msg => {
             .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
             .setFooter(`Source: IVAO API`);
 
-          msg.channel.send(onlineErrorEmbed);
-          functions.logger(
-            `error`,
-            `Online details requested by ${msg.author.tag} for ${ICAO} not available`
-          );
+          msg.channel
+            .send(onlineErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `error`,
+                `Online details requested by ${msg.author.tag} for ${ICAO} not available`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
@@ -1160,8 +1269,10 @@ bot.on('message', async msg => {
             `This is not a source for official charts. Please obtain an official chart from the appropriate agency`
           );
 
-        msg.author.send(chartsEmbed);
-        functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+        msg.author
+          .send(chartsEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`))
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
         if (msg.guild != null) {
           chartsEmbed = new Discord.RichEmbed()
@@ -1169,7 +1280,10 @@ bot.on('message', async msg => {
             .setColor(successColor)
             .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
 
-          msg.channel.send(chartsEmbed);
+          msg.channel
+            .send(chartsEmbed)
+            .then()
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         if (
@@ -1205,8 +1319,10 @@ bot.on('message', async msg => {
                   `This is not a source for official charts. Please obtain an official chart from the appropriate agency`
                 );
 
-              msg.author.send(chartsEmbed);
-              functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`);
+              msg.author
+                .send(chartsEmbed)
+                .then(() => functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`))
+                .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
               if (msg.guild != null) {
                 chartsEmbed = new Discord.RichEmbed()
@@ -1214,7 +1330,10 @@ bot.on('message', async msg => {
                   .setColor(successColor)
                   .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
 
-                msg.channel.send(chartsEmbed);
+                msg.channel
+                  .send(chartsEmbed)
+                  .then()
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               }
             } else {
               if (icao[ICAO]) {
@@ -1225,22 +1344,30 @@ bot.on('message', async msg => {
                     `Sorry ${msg.author}, ${ICAO} chart is not available in our database`
                   );
 
-                msg.channel.send(chartErrorEmbed);
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
-                );
+                msg.channel
+                  .send(chartErrorEmbed)
+                  .then(() =>
+                    functions.logger(
+                      `warn`,
+                      `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
+                    )
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               } else {
                 let chartErrorEmbed = new Discord.RichEmbed()
                   .setTitle(`Chart for ${ICAO}`)
                   .setColor(errorColor)
                   .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
-                msg.channel.send(chartErrorEmbed);
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
-                );
+                msg.channel
+                  .send(chartErrorEmbed)
+                  .then(() =>
+                    functions.logger(
+                      `warn`,
+                      `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
+                    )
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               }
             }
           });
@@ -1253,22 +1380,30 @@ bot.on('message', async msg => {
                 `Sorry ${msg.author}, ${ICAO} chart is not available in our database`
               );
 
-            msg.channel.send(chartErrorEmbed);
-            functions.logger(
-              `warn`,
-              `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
-            );
+            msg.channel
+              .send(chartErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           } else {
             let chartErrorEmbed = new Discord.RichEmbed()
               .setTitle(`Chart for ${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
-            msg.channel.send(chartErrorEmbed);
-            functions.logger(
-              `warn`,
-              `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
-            );
+            msg.channel
+              .send(chartErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           }
         }
       }
@@ -1295,22 +1430,30 @@ bot.on('message', async msg => {
             .setColor(errorColor)
             .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
 
-          msg.channel.send(metarErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`
-          );
+          msg.channel
+            .send(metarErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let metarErrorEmbed = new Discord.RichEmbed()
             .setTitle(`METAR for ${ICAO}`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
-          msg.channel.send(metarErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `
-          );
+          msg.channel
+            .send(metarErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let raw = metar.raw;
@@ -1462,8 +1605,10 @@ bot.on('message', async msg => {
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
 
-        msg.channel.send(metarEmbed);
-        functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`);
+        msg.channel
+          .send(metarEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`))
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1490,22 +1635,30 @@ bot.on('message', async msg => {
               `${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`
             );
 
-          msg.channel.send(tafErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`
-          );
+          msg.channel
+            .send(tafErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let tafErrorEmbed = new Discord.RichEmbed()
             .setTitle(`TAF for ${ICAO}`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
-          msg.channel.send(tafErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `
-          );
+          msg.channel
+            .send(tafErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let raw = `**Raw Report**\n ${taf.raw}\n`;
@@ -1561,8 +1714,10 @@ bot.on('message', async msg => {
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
 
-        msg.channel.send(tafEmbed);
-        functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`);
+        msg.channel
+          .send(tafEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`))
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1580,8 +1735,10 @@ bot.on('message', async msg => {
             'This is not a source for official briefing. Please use the appropriate forums'
           );
 
-        msg.channel.send(notamEmbed);
-        functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`);
+        msg.channel
+          .send(notamEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`))
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       } else {
         if (icao[ICAO]) {
           let notamErrorEmbed = new Discord.RichEmbed()
@@ -1589,22 +1746,30 @@ bot.on('message', async msg => {
             .setColor(errorColor)
             .setDescription(`${msg.author}, NOTAM not found for ${ICAO}.`);
 
-          msg.channel.send(notamErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`
-          );
+          msg.channel
+            .send(notamErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let notamErrorEmbed = new Discord.RichEmbed()
             .setTitle(`NOTAMs for ${ICAO}`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
-          msg.channel.send(notamErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `
-          );
+          msg.channel
+            .send(notamErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       }
     });
@@ -1630,22 +1795,30 @@ bot.on('message', async msg => {
             .setColor(errorColor)
             .setDescription(`${msg.author}, Information not available for ${ICAO}`);
 
-          msg.channel.send(icaoErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`
-          );
+          msg.channel
+            .send(icaoErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let icaoErrorEmbed = new Discord.RichEmbed()
             .setTitle(`${ICAO}`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
-          msg.channel.send(icaoErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `
-          );
+          msg.channel
+            .send(icaoErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let icaoEmbed = new Discord.RichEmbed().setTitle(`${ICAO}`).setColor(successColor);
@@ -1713,8 +1886,10 @@ bot.on('message', async msg => {
           icaoEmbed.addField(`More Info`, links);
         }
 
-        msg.channel.send(icaoEmbed);
-        functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`);
+        msg.channel
+          .send(icaoEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`))
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1726,8 +1901,10 @@ bot.on('message', async msg => {
         .setColor(successColor)
         .setDescription(`${timeform3} Z`);
 
-      msg.channel.send(zuluEmbed);
-      functions.logger(`info`, `Zulu time sent to ${msg.author.tag}`);
+      msg.channel
+        .send(zuluEmbed)
+        .then(() => functions.logger(`info`, `Zulu time sent to ${msg.author.tag}`))
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     } else {
       if (params.length == 2) {
         ICAO = params[0].toUpperCase();
@@ -1743,11 +1920,15 @@ bot.on('message', async msg => {
               .setDescription(`${timeParam} is not a valid time`)
               .setFooter(`Hint: Time should be in 24 hours and of format HHMM`);
 
-            msg.channel.send(zuluErrorEmbed);
-            functions.logger(
-              `warn`,
-              `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${timeParam} is not a valid time`
-            );
+            msg.channel
+              .send(zuluErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${timeParam} is not a valid time`
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           } else {
             var latLong = icao[ICAO];
             var lat = latLong[0];
@@ -1775,8 +1956,12 @@ bot.on('message', async msg => {
                   .setColor(successColor)
                   .setDescription(`${timeToSend} Z`);
 
-                msg.channel.send(zuluEmbed);
-                functions.logger(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`);
+                msg.channel
+                  .send(zuluEmbed)
+                  .then(() =>
+                    functions.logger(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`)
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           }
@@ -1786,11 +1971,15 @@ bot.on('message', async msg => {
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
-          msg.channel.send(zuluErrorEmbed);
-          functions.logger(
-            `warn`,
-            `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `
-          );
+          msg.channel
+            .send(zuluErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let zuluErrorEmbed = new Discord.RichEmbed()
@@ -1799,11 +1988,15 @@ bot.on('message', async msg => {
           .setDescription(`${msg.author}, Invalid Arguments`)
           .setFooter(`Hint : ${prefix}zulu [ICAO] [Local Time]`);
 
-        msg.channel.send(zuluErrorEmbed);
-        functions.logger(
-          `warn`,
-          `${msg.author.tag} asked for Zulu time but arguments were invalid`
-        );
+        msg.channel
+          .send(zuluErrorEmbed)
+          .then(() =>
+            functions.logger(
+              `warn`,
+              `${msg.author.tag} asked for Zulu time but arguments were invalid`
+            )
+          )
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     }
   }
@@ -1867,8 +2060,10 @@ bot.on('message', async msg => {
 
           briefEmbed.addField(`**Zulu**`, `${timeform3} Z`);
 
-          msg.channel.send(briefEmbed);
-          functions.logger(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`);
+          msg.channel
+            .send(briefEmbed)
+            .then(() => functions.logger(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`))
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         } else {
           if (icao[ICAO]) {
             let briefErrorEmbed = new Discord.RichEmbed()
@@ -1876,22 +2071,30 @@ bot.on('message', async msg => {
               .setColor(errorColor)
               .setDescription(`${msg.author}, no briefing available for ${ICAO}`);
 
-            msg.channel.send(briefErrorEmbed);
-            functions.logger(
-              `warn`,
-              `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`
-            );
+            msg.channel
+              .send(briefErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           } else {
             let briefErrorEmbed = new Discord.RichEmbed()
               .setTitle(`Briefing for ${ICAO}`)
               .setColor(errorColor)
               .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
 
-            msg.channel.send(briefErrorEmbed);
-            functions.logger(
-              `warn`,
-              `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `
-            );
+            msg.channel
+              .send(briefErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           }
         }
       });
@@ -1916,11 +2119,15 @@ bot.on('message', async msg => {
                 .setColor(errorColor)
                 .setDescription(`Unable to fetch route for ${from}-${to}`);
 
-              msg.channel.send(routeErrorEmbed);
-              functions.logger(
-                `error`,
-                `${from} ${to} route requested by ${msg.author.tag} was not available.`
-              );
+              msg.channel
+                .send(routeErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `error`,
+                    `${from} ${to} route requested by ${msg.author.tag} was not available.`
+                  )
+                )
+                .catch(error => functions.logger(`error`, JSON.stringify(error)));
             } else {
               let id = JSON.parse(body)[0].id;
               request(`${routeAPI}/plan/${id}`, function(err, response, body) {
@@ -1975,8 +2182,12 @@ bot.on('message', async msg => {
                     `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
                   );
 
-                msg.channel.send(routeEmbed);
-                functions.logger(`info`, `${from}-${to} route sent to ${msg.author.tag}`);
+                msg.channel
+                  .send(routeEmbed)
+                  .then(() =>
+                    functions.logger(`info`, `${from}-${to} route sent to ${msg.author.tag}`)
+                  )
+                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
               });
             }
           });
@@ -1986,11 +2197,15 @@ bot.on('message', async msg => {
             .setColor(errorColor)
             .setDescription(`Invalid Arguments\nFollow ${prefix}route [FROM-ICAO] [TO-ICAO]`);
 
-          msg.channel.send(routeErrorEmbed);
-          functions.logger(
-            `error`,
-            `${from} ${to} route with invalid arguments requested by ${msg.author.tag}`
-          );
+          msg.channel
+            .send(routeErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `error`,
+                `${from} ${to} route with invalid arguments requested by ${msg.author.tag}`
+              )
+            )
+            .catch(error => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let routeErrorEmbed = new Discord.RichEmbed()
@@ -2000,11 +2215,15 @@ bot.on('message', async msg => {
             `Your premium subscription has expired. To know more join our [Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
           );
 
-        msg.channel.send(routeErrorEmbed);
-        functions.logger(
-          `error`,
-          `${msg.author.tag} tried to use premium feature (Route) [EXPIRED].`
-        );
+        msg.channel
+          .send(routeErrorEmbed)
+          .then(() =>
+            functions.logger(
+              `error`,
+              `${msg.author.tag} tried to use premium feature (Route) [EXPIRED].`
+            )
+          )
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     } else {
       let routeErrorEmbed = new Discord.RichEmbed()
@@ -2014,8 +2233,12 @@ bot.on('message', async msg => {
           `This is a premium only feature. To know more join our [Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
         );
 
-      msg.channel.send(routeErrorEmbed);
-      functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route).`);
+      msg.channel
+        .send(routeErrorEmbed)
+        .then(() =>
+          functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route).`)
+        )
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2027,8 +2250,10 @@ bot.on('message', async msg => {
       .setColor(successColor)
       .setDescription(`[Click here to add AvBot to your Discord server](${inviteURL})`);
 
-    msg.author.send(linkEmbed);
-    functions.logger(`info`, `Bot link sent to ${msg.author.tag}`);
+    msg.author
+      .send(linkEmbed)
+      .then(() => functions.logger(`info`, `Bot link sent to ${msg.author.tag}`))
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
     if (msg.guild != null) {
       let linkEmbed2 = new Discord.RichEmbed()
@@ -2038,7 +2263,10 @@ bot.on('message', async msg => {
           `${msg.author}, link for adding **AvBot** to your Discord server has been sent to you.`
         );
 
-      msg.channel.send(linkEmbed2);
+      msg.channel
+        .send(linkEmbed2)
+        .then()
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2050,8 +2278,10 @@ bot.on('message', async msg => {
         `[Click here to join our AvBot Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
       );
 
-    msg.author.send(inviteEmbed);
-    functions.logger(`info`, `Server link sent to ${msg.author.tag}`);
+    msg.author
+      .send(inviteEmbed)
+      .then(() => functions.logger(`info`, `Server link sent to ${msg.author.tag}`))
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
 
     if (msg.guild != null) {
       let inviteEmbed2 = new Discord.RichEmbed()
@@ -2061,7 +2291,10 @@ bot.on('message', async msg => {
           `${msg.author}, link for joining our **AvBot Support Server** has been sent to you.`
         );
 
-      msg.channel.send(inviteEmbed2);
+      msg.channel
+        .send(inviteEmbed2)
+        .then()
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2076,8 +2309,10 @@ bot.on('message', async msg => {
       .setColor(successColor)
       .setDescription(`\`\`\`${bot.guilds.size}\`\`\``);
 
-    msg.channel.send(guildsEmbed);
-    functions.logger(`info`, `Guilds sent to ${msg.author.tag}`);
+    msg.channel
+      .send(guildsEmbed)
+      .then(() => functions.logger(`info`, `Guilds sent to ${msg.author.tag}`))
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
   }
 
   if (cmd == `${prefix}purge`) {
@@ -2112,11 +2347,15 @@ bot.on('message', async msg => {
       .setDescription(`\`\`\`${hours} hrs, ${minutes} mins, ${~~seconds} secs.\`\`\``)
       .setFooter('Wowie, maybe this is the longest time AvBot has been up?!?!?!!');
 
-    msg.channel.send(uptimeEmbed);
-    functions.logger(
-      `info`,
-      `Sent uptime (${hours} hrs, ${minutes} mins, ${~~seconds} secs) to ${msg.author.tag}`
-    );
+    msg.channel
+      .send(uptimeEmbed)
+      .then(() =>
+        functions.logger(
+          `info`,
+          `Sent uptime (${hours} hrs, ${minutes} mins, ${~~seconds} secs) to ${msg.author.tag}`
+        )
+      )
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
   }
 
   if (cmd == `${prefix}ping`) {
@@ -2126,13 +2365,19 @@ bot.on('message', async msg => {
     }
     let temp = new Discord.RichEmbed().setTitle('🏓 Ping!').setColor([53, 254, 75]);
 
-    let editMsg = await msg.channel.send(temp);
+    let editMsg = await msg.channel
+      .send(temp)
+      .then()
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
     let pingEmbed = new Discord.RichEmbed()
       .setTitle('🏓 Pong!')
       .setColor([53, 254, 75])
       .addField('Roundtrip', `${editMsg.createdTimestamp - msg.createdTimestamp}ms`, true)
       .addField('Heartbeat', `${~~bot.ping}ms`, true);
-    editMsg.edit(pingEmbed);
+    editMsg
+      .edit(pingEmbed)
+      .then()
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
     functions.logger(
       `info`,
       `Sent ping (Roundtrip: ${editMsg.createdTimestamp -
@@ -2153,7 +2398,8 @@ bot.on('message', async msg => {
       .then(() => bot.login(process.env.TOKEN))
       .then(message => {
         msg.channel.lastMessage.delete();
-      });
+      })
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
     functions.logger(`info`, `Manually restarted the bot by ${msg.author.tag}`);
   }
 
@@ -2172,11 +2418,15 @@ bot.on('message', async msg => {
           .setTitle(`AvBot Prefix Changed to \`${params[0]}\``)
           .setColor(successColor);
 
-        msg.channel.send(prefixEmbed);
-        functions.logger(
-          `info`,
-          `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`
-        );
+        msg.channel
+          .send(prefixEmbed)
+          .then(() =>
+            functions.logger(
+              `info`,
+              `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`
+            )
+          )
+          .catch(error => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -2200,13 +2450,17 @@ bot.on('message', async msg => {
               .setTitle(`AvBot Language Changed to \`${params[0].toUpperCase()}\``)
               .setColor(successColor);
 
-            msg.channel.send(languageEmbed);
-            functions.logger(
-              `info`,
-              `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${
-                msg.author.tag
-              }`
-            );
+            msg.channel
+              .send(languageEmbed)
+              .then(() =>
+                functions.logger(
+                  `info`,
+                  `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${
+                    msg.author.tag
+                  }`
+                )
+              )
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           }
         }
       );
@@ -2218,11 +2472,17 @@ bot.on('message', async msg => {
         )
         .setColor(successColor);
 
-      msg.channel.send(languageEmbed);
-      functions.logger(
-        `info`,
-        `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${msg.author.tag}`
-      );
+      msg.channel
+        .send(languageEmbed)
+        .then(() =>
+          functions.logger(
+            `info`,
+            `Prefix changed to ${params[0].toLowerCase()} for ${msg.guild.name} by ${
+              msg.author.tag
+            }`
+          )
+        )
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2243,7 +2503,10 @@ bot.on('message', async msg => {
       channels.forEach(channel => {
         channel.members.forEach(member => {
           if (bot.user.id == member.user.id) {
-            channel.send(broadcastEmbed);
+            channel
+              .send(broadcastEmbed)
+              .then()
+              .catch(error => functions.logger(`error`, JSON.stringify(error)));
           }
         });
       });
@@ -2272,11 +2535,15 @@ bot.on('message', async msg => {
       .setColor(successColor)
       .setFooter(`Valid till ${date}`);
 
-    msg.channel.send(premiumEmbed);
-    functions.logger(
-      `info`,
-      `AvBot Premium activated for ${premiumGuild.guild_name} by ${msg.author.tag}`
-    );
+    msg.channel
+      .send(premiumEmbed)
+      .then(() =>
+        functions.logger(
+          `info`,
+          `AvBot Premium activated for ${premiumGuild.guild_name} by ${msg.author.tag}`
+        )
+      )
+      .catch(error => functions.logger(`error`, JSON.stringify(error)));
   }
 
   // if (cmd == `${prefix}leave`) {
@@ -2345,8 +2612,10 @@ bot.on('message', async msg => {
         );
       }
 
-      msg.channel.send(helpEmbed);
-      functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
+      msg.channel
+        .send(helpEmbed)
+        .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2410,8 +2679,10 @@ bot.on('message', async msg => {
         );
       }
 
-      msg.channel.send(helpEmbed);
-      functions.logger(`info`, `Help message sent to ${msg.author.tag}`);
+      msg.channel
+        .send(helpEmbed)
+        .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+        .catch(error => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 });
