@@ -26,18 +26,20 @@ process
   .on('unhandledRejection', (reason, p) => {
     functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
   })
-.on('uncaughtException', err => {
-  functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
-  process.exit(1);
-});
+  .on('uncaughtException', err => {
+    functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
+    process.exit(1);
+  });
 
 const app = express();
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname + '/index.html'));
+  res.sendFile(path.join(`${__dirname}/index.html`));
 });
 
 app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
+
+console.log(`Environment: ${app.get('env')}`);
 
 // const logger = winston.createLogger({
 //   level: "info",
@@ -62,7 +64,7 @@ app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 //   ]
 // });
 
-mongoose.connect(process.env.mLab, { useNewUrlParser: true });
+mongoose.connect(process.env.M_LAB, { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true });
 
 var guildSchema = new mongoose.Schema({
   guild_id: { type: String, unique: true },
@@ -164,7 +166,7 @@ const atcRatingsIVAO = [
 const VatsimWhazzup = 'http://us.data.vatsim.net/vatsim-data.txt';
 
 const bot = new Discord.Client();
-const dbl = new DBL(process.env.dblToken, bot);
+const dbl = new DBL(process.env.DBL_TOKEN, bot);
 
 bot.on('error', e => functions.logger(`error`, e));
 bot.on('warn', e => functions.logger(`warn`, e));
@@ -221,7 +223,7 @@ bot.on('ready', async () => {
     .setColor(successColor)
     .setFooter(`${moment.tz(moment.utc(), 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')}`);
 
-  bot.channels.find(channel => channel.id === process.env.RestartChannel).send(restartEmbed);
+  bot.channels.find(channel => channel.id === process.env.RESTART_CHANNEL).send(restartEmbed);
 
   bot.user.setStatus('online');
   bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
@@ -347,7 +349,7 @@ bot.on('guildCreate', guild => {
     .setTitle(`Hello ${guild.name} and thank you for choosing AvBot`)
     .setColor(successColor)
     .setDescription(
-      `If you need any help regarding AvBot or have any suggestions join our [AvBot Support Server](${process.env.AvBotSupportServer}). To get started try ${prefix}help.`
+      `If you need any help regarding AvBot or have any suggestions join our [AvBot Support Server](${process.env.AVBOT_SUPPORT_SERVER}). To get started try ${prefix}help.`
     )
     .setFooter(`regards Rahul Singh#6615`);
 
@@ -370,7 +372,7 @@ bot.on('guildCreate', guild => {
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Joined at ${time_join}`);
 
-  bot.channels.find(channel => channel.id === process.env.GuildsChannel).send(newGuildEmbed);
+  bot.channels.find(channel => channel.id === process.env.GUILDS_CHANNEL).send(newGuildEmbed);
 
   Guild.create({ guild_id: guild.id, guild_name: guild.name }, (err, guild) => {
     if (err) console.log(err);
@@ -409,7 +411,7 @@ bot.on('guildDelete', guild => {
     .addField(`Region`, `${guild.region}`)
     .setFooter(`Removed at ${time_join}`);
 
-  bot.channels.find(channel => channel.id === process.env.GuildsChannel).send(removeGuildEmbed);
+  bot.channels.find(channel => channel.id === process.env.GUILDS_CHANNEL).send(removeGuildEmbed);
 });
 
 bot.on('message', async msg => {
@@ -1568,9 +1570,7 @@ bot.on('message', async msg => {
   if (cmd == `${prefix}notam` || cmd == `${prefix}notams`) {
     if (args.length === 1) return;
 
-    notams(`${ICAO}`, {
-      format: 'DOMESTIC'
-    }).then(result => {
+    notams.fetch(`${ICAO}`, { format: 'ICAO' }).then(result => {
       if (result && result[0] && result[0].notams[1]) {
         let notamEmbed = new Discord.RichEmbed()
           .setTitle(`NOTAMs for ${result[0].icao}`)
@@ -1997,7 +1997,7 @@ bot.on('message', async msg => {
           .setTitle(`Route`)
           .setColor(errorColor)
           .setDescription(
-            `Your premium subscription has expired. To know more join our [Support Server](${process.env.AvBotSupportServer})`
+            `Your premium subscription has expired. To know more join our [Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
           );
 
         msg.channel.send(routeErrorEmbed);
@@ -2011,7 +2011,7 @@ bot.on('message', async msg => {
         .setTitle(`Route`)
         .setColor(errorColor)
         .setDescription(
-          `This is a premium only feature. To know more join our [Support Server](${process.env.AvBotSupportServer})`
+          `This is a premium only feature. To know more join our [Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
         );
 
       msg.channel.send(routeErrorEmbed);
@@ -2047,7 +2047,7 @@ bot.on('message', async msg => {
       .setTitle('AvBot Support Server')
       .setColor(successColor)
       .setDescription(
-        `[Click here to join our AvBot Support Server](${process.env.AvBotSupportServer})`
+        `[Click here to join our AvBot Support Server](${process.env.AVBOT_SUPPORT_SERVER})`
       );
 
     msg.author.send(inviteEmbed);
@@ -2066,7 +2066,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}guild` || cmd == `${prefix}guilds`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to check guilds`);
       return;
     }
@@ -2081,7 +2081,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}purge`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to delete messages `);
       return;
     }
@@ -2097,7 +2097,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}uptime`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to check uptime `);
       return;
     }
@@ -2120,7 +2120,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}ping`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to ping`);
       return;
     }
@@ -2141,7 +2141,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}restart`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to restart the bot`);
       return;
     }
@@ -2150,7 +2150,7 @@ bot.on('message', async msg => {
     await msg.channel
       .send(restartEmbed)
       .then(message => bot.destroy())
-      .then(() => bot.login(process.env.token))
+      .then(() => bot.login(process.env.TOKEN))
       .then(message => {
         msg.channel.lastMessage.delete();
       });
@@ -2160,7 +2160,7 @@ bot.on('message', async msg => {
   if (cmd == `${prefix}avbotprefix`) {
     if (args.length === 1) return;
 
-    if (!msg.member.hasPermission('ADMINISTRATOR') && msg.author.id !== process.env.myID) {
+    if (!msg.member.hasPermission('ADMINISTRATOR') && msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to change prefix for ${msg.guild.name}`);
       return;
     }
@@ -2184,7 +2184,7 @@ bot.on('message', async msg => {
   if (cmd == `${prefix}avbotlanguage`) {
     if (args.length === 1) return;
 
-    if (!msg.member.hasPermission('ADMINISTRATOR') && msg.author.id !== process.env.myID) {
+    if (!msg.member.hasPermission('ADMINISTRATOR') && msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to change language for ${msg.guild.name}`);
       return;
     }
@@ -2214,7 +2214,7 @@ bot.on('message', async msg => {
       let languageEmbed = new Discord.RichEmbed()
         .setTitle(`AvBot`)
         .setDescription(
-          `AvBot currently supports\n -> English [en] \n-> Polish [pl] \n\nIf you want to help in translating into other languages please [join our support server](${process.env.AvBotSupportServer}).`
+          `AvBot currently supports\n -> English [en] \n-> Polish [pl] \n\nIf you want to help in translating into other languages please [join our support server](${process.env.AVBOT_SUPPORT_SERVER}).`
         )
         .setColor(successColor);
 
@@ -2227,7 +2227,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}broadcast`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to broadcast a message.`);
       return;
     }
@@ -2255,7 +2255,7 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}premium`) {
-    if (msg.author.id !== process.env.myID) {
+    if (msg.author.id !== process.env.MY_ID) {
       functions.logger(`error`, `${msg.author.tag} tried to add a server to premium.`);
       return;
     }
@@ -2416,7 +2416,7 @@ bot.on('message', async msg => {
   }
 });
 
-bot.login(process.env.token).then(
+bot.login(process.env.TOKEN).then(
   token => {},
   error => {
     console.log(error);

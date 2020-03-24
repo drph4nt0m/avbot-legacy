@@ -42,7 +42,7 @@ module.exports = {
   },
 
   logger: function (type, content) {
-    request.post(process.env.webhook, {
+    request.post(process.env.LOG_WEBHOOK, {
       json: {
         content: `[${type.toUpperCase()}]\n${content}`
       }
