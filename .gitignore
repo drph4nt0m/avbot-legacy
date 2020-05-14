@@ -9,10 +9,8 @@
 /node_modules
 
 #
-.env
+.env*
 log
-whazzup.txt
-whazzup.txt.gz
 
 # IDEs and editors
 /.idea
@@ -43,3 +41,12 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Images
+*.jpg
+*.png
+
+# Data files
+whazzup.txt
+whazzup.txt.gz
+vatsim-data.txt

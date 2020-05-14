@@ -20,13 +20,13 @@ dotenv.config();
 
 Sentry.init({ dsn: process.env.SENTRY_DSN });
 
-Sentry.configureScope(function(scope) {});
+Sentry.configureScope(function (scope) {});
 
 process
   .on('unhandledRejection', (reason, p) => {
     functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
   })
-  .on('uncaughtException', err => {
+  .on('uncaughtException', (err) => {
     functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
     process.exit(1);
   });
@@ -67,7 +67,7 @@ console.log(`Environment: ${app.get('env')}`);
 mongoose.connect(process.env.M_LAB, {
   useNewUrlParser: true,
   useCreateIndex: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 });
 
 var guildSchema = new mongoose.Schema({
@@ -77,8 +77,8 @@ var guildSchema = new mongoose.Schema({
   language: { type: String, default: 'en' },
   premium: {
     allowed: { type: Boolean, default: false },
-    till: Date
-  }
+    till: Date,
+  },
 });
 
 var Guild = mongoose.model('guilds', guildSchema);
@@ -87,7 +87,7 @@ let prefix = '!';
 let language = 'en';
 let premium = {
   allowed: false,
-  till: moment.now()
+  till: new Date(),
 };
 const successColor = '#1a8fe3';
 const errorColor = '#bf3100';
@@ -104,6 +104,7 @@ const name = 'whazzup.txt.gz';
 const to = cwd + '/';
 const from = path.join(cwd, name);
 
+let lastTimeUpdateVatsim = 0;
 let lastTimeUpdateIVAO = 0;
 const pilotRatingsIVAO = [
   '',
@@ -116,7 +117,7 @@ const pilotRatingsIVAO = [
   'CP',
   'ATP',
   'SFI',
-  'CFI'
+  'CFI',
 ];
 const facilityTypesIVAO = [
   'Observer',
@@ -126,7 +127,7 @@ const facilityTypesIVAO = [
   'Tower',
   'Approach',
   'ACC',
-  'Departure'
+  'Departure',
 ];
 const facilityTypes2IVAO = [
   'Observer',
@@ -136,7 +137,7 @@ const facilityTypes2IVAO = [
   'Tower',
   'Approach',
   'Control',
-  'Departure'
+  'Departure',
 ];
 const administrativeRatingsIVAO = [
   'Suspended',
@@ -151,7 +152,7 @@ const administrativeRatingsIVAO = [
   '',
   '',
   'Supervisor',
-  'Administrator'
+  'Administrator',
 ];
 const atcRatingsIVAO = [
   '',
@@ -164,7 +165,7 @@ const atcRatingsIVAO = [
   'ACC',
   'SEC',
   'SAI',
-  'CAI'
+  'CAI',
 ];
 
 const VatsimWhazzup = 'http://us.data.vatsim.net/vatsim-data.txt';
@@ -172,18 +173,18 @@ const VatsimWhazzup = 'http://us.data.vatsim.net/vatsim-data.txt';
 const bot = new Discord.Client();
 const dbl = new DBL(process.env.DBL_TOKEN, bot);
 
-bot.on('error', e => functions.logger(`error`, e));
-bot.on('warn', e => functions.logger(`warn`, e));
+bot.on('error', (e) => functions.logger(`error`, e));
+bot.on('warn', (e) => functions.logger(`warn`, e));
 
 dbl.on('posted', () => functions.logger('info', 'Server count posted!'));
-dbl.on('error', e => functions.logger(`error`, `${e}`));
+dbl.on('error', (e) => functions.logger(`error`, `${e}`));
 
 bot.on('ready', async () => {
   let start_time = moment.tz(bot.readyAt, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   functions.logger(`info`, `AvBot v2 is online`);
 
-  let guildIds = bot.guilds.map(e => e.id);
-  let guildNames = bot.guilds.map(e => e.name);
+  let guildIds = bot.guilds.map((e) => e.id);
+  let guildNames = bot.guilds.map((e) => e.name);
 
   let guildArray = [];
 
@@ -228,24 +229,24 @@ bot.on('ready', async () => {
     .setFooter(`${moment.tz(moment.utc(), 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')}`);
 
   bot.channels
-    .find(channel => channel.id === process.env.RESTART_CHANNEL)
+    .find((channel) => channel.id === process.env.RESTART_CHANNEL)
     .send(restartEmbed)
     .then(() => {
       bot.user.setStatus('online');
       bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
-        type: 'WATCHING'
+        type: 'WATCHING',
       });
     })
-    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
   setInterval(() => {
     dbl.postStats(bot.guilds.size, null, null);
   }, 1800000);
 
-  fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+  fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
     if (err) {
       var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function(response) {
+      var req = http.get(IVAOWhazzup, function (response) {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -253,11 +254,11 @@ bot.on('ready', async () => {
 
           extract.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
               contents = contents.split('!GENERAL')[1];
               let general = contents.split('!CLIENTS')[0];
               let generalArray = general.split('\n');
-              lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+              lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
               functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
             });
           });
@@ -267,11 +268,11 @@ bot.on('ready', async () => {
       contents = contents.split('!GENERAL')[1];
       let general = contents.split('!CLIENTS')[0];
       let generalArray = general.split('\n');
-      lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+      lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
 
-      if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+      if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
         var file = fs.createWriteStream('whazzup.txt.gz');
-        var req = http.get(IVAOWhazzup, function(response) {
+        var req = http.get(IVAOWhazzup, function (response) {
           response.pipe(file);
           response.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -279,11 +280,11 @@ bot.on('ready', async () => {
 
             extract.on('end', () => {
               functions.logger(`info`, `IVAO Whazzup extracted`);
-              fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+              fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
                 contents = contents.split('!GENERAL')[1];
                 let general = contents.split('!CLIENTS')[0];
                 let generalArray = general.split('\n');
-                lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+                lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
                 functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
               });
             });
@@ -295,18 +296,18 @@ bot.on('ready', async () => {
     }
   });
 
-  fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+  fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
     if (err) {
       var file = fs.createWriteStream('vatsim-data.txt');
-      var req = http.get(VatsimWhazzup, function(response) {
+      var req = http.get(VatsimWhazzup, function (response) {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
-          fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+          fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             contents = contents.split('!GENERAL:')[1];
             let general = contents.split('!VOICE SERVERS:')[0];
             let generalArray = general.split('\n');
-            lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+            lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
             functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
           });
         });
@@ -315,19 +316,19 @@ bot.on('ready', async () => {
       contents = contents.split('!GENERAL:')[1];
       let general = contents.split('!VOICE SERVERS:')[0];
       let generalArray = general.split('\n');
-      lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+      lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
 
-      if (parseInt(lastTimeUpdateVatsim, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+      if (lastTimeUpdateVatsim + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
         var file = fs.createWriteStream('vatsim-data.txt');
-        var req = http.get(VatsimWhazzup, function(response) {
+        var req = http.get(VatsimWhazzup, function (response) {
           response.pipe(file);
           response.on('end', () => {
             functions.logger(`info`, `Vatsim Whazzup downloaded`);
-            fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+            fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
               contents = contents.split('!GENERAL:')[1];
               let general = contents.split('!VOICE SERVERS:')[0];
               let generalArray = general.split('\n');
-              lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+              lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
               functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
             });
           });
@@ -339,8 +340,8 @@ bot.on('ready', async () => {
   });
 });
 
-bot.on('guildCreate', guild => {
-  Sentry.configureScope(function(scope) {
+bot.on('guildCreate', (guild) => {
+  Sentry.configureScope(function (scope) {
     scope.setContext('GUILD', guild);
   });
 
@@ -350,7 +351,7 @@ bot.on('guildCreate', guild => {
   );
 
   bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
-    type: 'WATCHING'
+    type: 'WATCHING',
   });
 
   let welcomeEmbed = new Discord.RichEmbed()
@@ -362,14 +363,14 @@ bot.on('guildCreate', guild => {
     .setFooter(`regards Rahul Singh#6615`);
 
   guild.channels
-    .filter(c => c.type === 'text')
+    .filter((c) => c.type === 'text')
     .first()
     .send(welcomeEmbed)
     .then(functions.logger(`info`, `Sent Welcome Message to ${guild.name}.`))
-    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
   let time_join = moment.tz(guild.joined_at, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-  let owner = bot.users.find(user => user.id === guild.ownerID);
+  let owner = bot.users.find((user) => user.id === guild.ownerID);
   let newGuildEmbed = new Discord.RichEmbed()
     .setTitle(`Bot Added to Guild`)
     .setColor(successColor)
@@ -382,10 +383,10 @@ bot.on('guildCreate', guild => {
     .setFooter(`Joined at ${time_join}`);
 
   bot.channels
-    .find(channel => channel.id === process.env.GUILDS_CHANNEL)
+    .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
     .send(newGuildEmbed)
     .then()
-    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
   Guild.create({ guild_id: guild.id, guild_name: guild.name }, (err, guild) => {
     if (err) console.log(err);
@@ -393,16 +394,16 @@ bot.on('guildCreate', guild => {
   });
 });
 
-bot.on('guildDelete', guild => {
+bot.on('guildDelete', (guild) => {
   bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
-    type: 'WATCHING'
+    type: 'WATCHING',
   });
 
   if (guild.deleted) {
     return true;
   }
 
-  Sentry.configureScope(function(scope) {
+  Sentry.configureScope(function (scope) {
     scope.setContext('GUILD', guild);
   });
 
@@ -412,7 +413,7 @@ bot.on('guildDelete', guild => {
   );
 
   let time_join = moment.tz(guild.joined_at, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
-  let owner = bot.users.find(user => user.id === guild.ownerID);
+  let owner = bot.users.find((user) => user.id === guild.ownerID);
   let removeGuildEmbed = new Discord.RichEmbed()
     .setTitle(`Bot Removed from Guild`)
     .setColor(errorColor)
@@ -425,16 +426,16 @@ bot.on('guildDelete', guild => {
     .setFooter(`Removed at ${time_join}`);
 
   bot.channels
-    .find(channel => channel.id === process.env.GUILDS_CHANNEL)
+    .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
     .send(removeGuildEmbed)
     .then()
-    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 });
 
-bot.on('message', async msg => {
+bot.on('message', async (msg) => {
   if (msg.author.bot || !msg.guild) return;
 
-  Sentry.configureScope(function(scope) {
+  Sentry.configureScope(function (scope) {
     scope.setUser(msg.author);
     scope.setContext('GUILD', msg.guild);
     scope.setContext('MESSAGE', msg);
@@ -453,7 +454,7 @@ bot.on('message', async msg => {
   let ICAO = args[args.length - 1].toUpperCase();
   let tempParams = args.slice(1, args.length);
   let params = [];
-  tempParams.forEach(ele => {
+  tempParams.forEach((ele) => {
     if (ele != '') params[params.length] = ele;
   });
 
@@ -492,13 +493,13 @@ bot.on('message', async msg => {
   }
 
   if (cmd == `${prefix}vatsim`) {
-    if (parseInt(lastTimeUpdateVatsim, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+    if (lastTimeUpdateVatsim + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('vatsim-data.txt');
-      var req = http.get(VatsimWhazzup, function(response) {
+      var req = http.get(VatsimWhazzup, function (response) {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
-          fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+          fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             contents = contents.split('!GENERAL:')[1];
             let general = contents.split('!VOICE SERVERS:')[0];
             contents = contents.split('!VOICE SERVERS:')[1];
@@ -509,16 +510,16 @@ bot.on('message', async msg => {
             let servers = contents.split('!PREFILE')[0];
             let prefile = contents.split('!PREFILE')[1];
             let generalArray = general.split('\n');
-            lastTimeUpdateVatsim = generalArray[3].split(' = ')[1];
+            lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
             functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
             let clientsArray = clients.split('\n');
             let presentFlag = false;
-            clientsArray.forEach(client => {
+            clientsArray.forEach((client) => {
               let decoded = client.split(':');
               if (decoded[0] == ICAO) {
                 if (decoded[3] == 'PILOT') {
                   presentFlag = true;
-                  let dt = 0;
+                  let dt = '';
                   if (decoded[22].length == 2) {
                     dt = '00' + ':' + decoded[22].substring(0, 2);
                   } else if (decoded[22].length == 3) {
@@ -526,13 +527,13 @@ bot.on('message', async msg => {
                   } else {
                     dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
                   }
-                  let eeth = 0;
+                  let eeth = '';
                   if (decoded[24].length == 1) {
                     eeth = '0' + decoded[24];
                   } else {
                     eeth = decoded[24];
                   }
-                  let eetm = 0;
+                  let eetm = '';
                   if (decoded[25].length == 1) {
                     eetm = '0' + decoded[25];
                   } else {
@@ -567,12 +568,12 @@ bot.on('message', async msg => {
                         `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
                       )
                     )
-                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                 } else if (decoded[3] == 'ATC') {
                   presentFlag = true;
 
                   var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-                  request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+                  request({ url: url, headers: avwxHeaders }, function (err, response, body) {
                     let noContent = false;
                     let info = { error: false };
                     try {
@@ -600,7 +601,7 @@ bot.on('message', async msg => {
                             `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
                           )
                         )
-                        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                     } else {
                       let vatsimEmbed = new Discord.RichEmbed()
                         .setTitle(`VATSIM : ${ICAO}`)
@@ -621,7 +622,7 @@ bot.on('message', async msg => {
                             `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
                           )
                         )
-                        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                     }
                   });
                 }
@@ -642,13 +643,13 @@ bot.on('message', async msg => {
                     `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
                   )
                 )
-                .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             }
           });
         });
       });
     } else {
-      fs.readFile('vatsim-data.txt', 'utf8', function(err, contents) {
+      fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
         contents = contents.split('!GENERAL:')[1];
         let general = contents.split('!VOICE SERVERS:')[0];
         contents = contents.split('!VOICE SERVERS:')[1];
@@ -661,12 +662,12 @@ bot.on('message', async msg => {
         let generalArray = general.split('\n');
         let clientsArray = clients.split('\n');
         let presentFlag = false;
-        clientsArray.forEach(client => {
+        clientsArray.forEach((client) => {
           let decoded = client.split(':');
           if (decoded[0] == ICAO) {
             if (decoded[3] == 'PILOT') {
               presentFlag = true;
-              let dt = 0;
+              let dt = '';
               if (decoded[22].length == 2) {
                 dt = '00' + ':' + decoded[22].substring(0, 2);
               } else if (decoded[22].length == 3) {
@@ -674,13 +675,13 @@ bot.on('message', async msg => {
               } else {
                 dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
               }
-              let eeth = 0;
+              let eeth = '';
               if (decoded[24].length == 1) {
                 eeth = '0' + decoded[24];
               } else {
                 eeth = decoded[24];
               }
-              let eetm = 0;
+              let eetm = '';
               if (decoded[25].length == 1) {
                 eetm = '0' + decoded[25];
               } else {
@@ -712,12 +713,12 @@ bot.on('message', async msg => {
                 .then(() =>
                   functions.logger(`info`, `Vatsim details for ${ICAO} sent to ${msg.author.tag}`)
                 )
-                .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             } else if (decoded[3] == 'ATC') {
               presentFlag = true;
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-              request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+              request({ url: url, headers: avwxHeaders }, function (err, response, body) {
                 let noContent = false;
                 let info = { error: false };
                 try {
@@ -745,7 +746,7 @@ bot.on('message', async msg => {
                         `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
                       )
                     )
-                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                 } else {
                   let vatsimEmbed = new Discord.RichEmbed()
                     .setTitle(`VATSIM : ${ICAO}`)
@@ -766,7 +767,7 @@ bot.on('message', async msg => {
                         `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
                       )
                     )
-                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                 }
               });
             }
@@ -787,16 +788,16 @@ bot.on('message', async msg => {
                 `Vatsim details requested by ${msg.author.tag} for ${ICAO} not available`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
   }
 
   if (cmd == `${prefix}ivao`) {
-    if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+    if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function(response) {
+      var req = http.get(IVAOWhazzup, function (response) {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -804,7 +805,7 @@ bot.on('message', async msg => {
 
           extract.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
               contents = contents.split('!GENERAL')[1];
               let general = contents.split('!CLIENTS')[0];
               contents = contents.split('!CLIENTS')[1];
@@ -814,16 +815,16 @@ bot.on('message', async msg => {
               let servers = contents.split('!SERVERS')[1];
 
               let generalArray = general.split('\n');
-              lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+              lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
               functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
               let clientsArray = clients.split('\n');
               let presentFlag = false;
-              clientsArray.forEach(client => {
+              clientsArray.forEach((client) => {
                 let decoded = client.split(':');
                 if (decoded[0] == ICAO) {
                   if (decoded[3] == 'PILOT') {
                     presentFlag = true;
-                    let dt = 0;
+                    let dt = '';
                     if (decoded[22].length == 2) {
                       dt = '00' + ':' + decoded[22].substring(0, 2);
                     } else if (decoded[22].length == 3) {
@@ -831,13 +832,13 @@ bot.on('message', async msg => {
                     } else {
                       dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
                     }
-                    let eeth = 0;
+                    let eeth = '';
                     if (decoded[24].length == 1) {
                       eeth = '0' + decoded[24];
                     } else {
                       eeth = decoded[24];
                     }
-                    let eetm = 0;
+                    let eetm = '';
                     if (decoded[25].length == 1) {
                       eetm = '0' + decoded[25];
                     } else {
@@ -873,12 +874,12 @@ bot.on('message', async msg => {
                           `IVAO details for ${ICAO} sent to ${msg.author.tag}`
                         )
                       )
-                      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                   } else if (decoded[3] == 'ATC') {
                     presentFlag = true;
 
                     var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-                    request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+                    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
                       let noContent = false;
                       let info = { error: false };
                       try {
@@ -907,7 +908,7 @@ bot.on('message', async msg => {
                               `IVAO details for ${ICAO} sent to ${msg.author.tag}`
                             )
                           )
-                          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                       } else {
                         let ivaoEmbed = new Discord.RichEmbed()
                           .setTitle(
@@ -933,7 +934,7 @@ bot.on('message', async msg => {
                               `IVAO details for ${ICAO} sent to ${msg.author.tag}`
                             )
                           )
-                          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                       }
                     });
                   }
@@ -954,14 +955,14 @@ bot.on('message', async msg => {
                       `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
                     )
                   )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           });
         });
       });
     } else {
-      fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+      fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
         contents = contents.split('!GENERAL')[1];
         let general = contents.split('!CLIENTS')[0];
         contents = contents.split('!CLIENTS')[1];
@@ -971,12 +972,12 @@ bot.on('message', async msg => {
         let servers = contents.split('!SERVERS')[1];
         let clientsArray = clients.split('\n');
         let presentFlag = false;
-        clientsArray.forEach(client => {
+        clientsArray.forEach((client) => {
           let decoded = client.split(':');
           if (decoded[0] == ICAO) {
             if (decoded[3] == 'PILOT') {
               presentFlag = true;
-              let dt = 0;
+              let dt = '';
               if (decoded[22].length == 2) {
                 dt = '00' + ':' + decoded[22].substring(0, 2);
               } else if (decoded[22].length == 3) {
@@ -984,13 +985,13 @@ bot.on('message', async msg => {
               } else {
                 dt = decoded[22].substring(0, 2) + ':' + decoded[22].substring(2, 4);
               }
-              let eeth = 0;
+              let eeth = '';
               if (decoded[24].length == 1) {
                 eeth = '0' + decoded[24];
               } else {
                 eeth = decoded[24];
               }
-              let eetm = 0;
+              let eetm = '';
               if (decoded[25].length == 1) {
                 eetm = '0' + decoded[25];
               } else {
@@ -1023,12 +1024,12 @@ bot.on('message', async msg => {
                 .then(() =>
                   functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
                 )
-                .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             } else if (decoded[3] == 'ATC') {
               presentFlag = true;
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-              request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+              request({ url: url, headers: avwxHeaders }, function (err, response, body) {
                 let noContent = false;
                 let info = { error: false };
                 try {
@@ -1054,7 +1055,7 @@ bot.on('message', async msg => {
                     .then(() =>
                       functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
                     )
-                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                 } else {
                   let ivaoEmbed = new Discord.RichEmbed()
                     .setTitle(
@@ -1075,7 +1076,7 @@ bot.on('message', async msg => {
                     .then(() =>
                       functions.logger(`info`, `IVAO details for ${ICAO} sent to ${msg.author.tag}`)
                     )
-                    .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
                 }
               });
             }
@@ -1096,18 +1097,17 @@ bot.on('message', async msg => {
                 `IVAO details requested by ${msg.author.tag} for ${ICAO} not available`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
   }
 
   if (cmd == `${prefix}online`) {
-    FIR = ICAO.substring(0, 2);
-    console.log(FIR);
-    if (parseInt(lastTimeUpdateIVAO, 10) + 400 < moment.utc().format('YYYYMMDDHHmmss')) {
+    let FIR = ICAO.substring(0, 2);
+    if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function(response) {
+      var req = http.get(IVAOWhazzup, function (response) {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -1115,7 +1115,7 @@ bot.on('message', async msg => {
 
           extract.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
               contents = contents.split('!GENERAL')[1];
               let general = contents.split('!CLIENTS')[0];
               contents = contents.split('!CLIENTS')[1];
@@ -1125,13 +1125,13 @@ bot.on('message', async msg => {
               let servers = contents.split('!SERVERS')[1];
 
               let generalArray = general.split('\n');
-              lastTimeUpdateIVAO = generalArray[3].split(' = ')[1];
+              lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
               functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
               let clientsArray = clients.split('\n');
 
               let presentFlag = false;
               let found = [];
-              clientsArray.forEach(client => {
+              clientsArray.forEach((client) => {
                 let decoded = client.split(':');
                 if (decoded[0].substring(0, 2) == FIR) {
                   if (decoded[3] == 'ATC') {
@@ -1140,7 +1140,7 @@ bot.on('message', async msg => {
                       callSign: decoded[0],
                       vid: decoded[1],
                       position: facilityTypesIVAO[decoded[18]],
-                      frequency: decoded[4]
+                      frequency: decoded[4],
                     };
                     found.push(temp);
                   }
@@ -1152,7 +1152,7 @@ bot.on('message', async msg => {
                   .setColor(successColor)
                   .setFooter(`Source: IVAO API`);
 
-                found.forEach(ele => {
+                found.forEach((ele) => {
                   onlineEmbed.addField(
                     `${ele.callSign}`,
                     `VID: ${ele.vid}, Frequency: ${ele.frequency}`
@@ -1167,7 +1167,7 @@ bot.on('message', async msg => {
                       `Online details for ${ICAO} FIR sent to ${msg.author.tag}`
                     )
                   )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
               } else {
                 let onlineErrorEmbed = new Discord.RichEmbed()
                   .setTitle(`IVAO : ${ICAO}`)
@@ -1183,14 +1183,14 @@ bot.on('message', async msg => {
                       `Online details requested by ${msg.author.tag} for ${ICAO} not available`
                     )
                   )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           });
         });
       });
     } else {
-      fs.readFile('whazzup.txt', 'utf8', function(err, contents) {
+      fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
         contents = contents.split('!GENERAL')[1];
         let general = contents.split('!CLIENTS')[0];
         contents = contents.split('!CLIENTS')[1];
@@ -1201,17 +1201,17 @@ bot.on('message', async msg => {
         let clientsArray = clients.split('\n');
 
         let presentFlag = false;
-        found = [];
-        clientsArray.forEach(client => {
+        let found = [];
+        clientsArray.forEach((client) => {
           let decoded = client.split(':');
           if (decoded[0].substring(0, 2) == FIR) {
             if (decoded[3] == 'ATC') {
               presentFlag = true;
-              temp = {
+              let temp = {
                 callSign: decoded[0],
                 vid: decoded[1],
                 position: facilityTypesIVAO[decoded[18]],
-                frequency: decoded[4]
+                frequency: decoded[4],
               };
               found.push(temp);
             }
@@ -1223,7 +1223,7 @@ bot.on('message', async msg => {
             .setColor(successColor)
             .setFooter(`Source: IVAO API`);
 
-          found.forEach(ele => {
+          found.forEach((ele) => {
             onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
           });
 
@@ -1232,7 +1232,7 @@ bot.on('message', async msg => {
             .then(() =>
               functions.logger(`info`, `Online details for ${ICAO} FIR sent to ${msg.author.tag}`)
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let onlineErrorEmbed = new Discord.RichEmbed()
             .setTitle(`IVAO : ${ICAO}`)
@@ -1248,7 +1248,7 @@ bot.on('message', async msg => {
                 `Online details requested by ${msg.author.tag} for ${ICAO} not available`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       });
     }
@@ -1272,7 +1272,7 @@ bot.on('message', async msg => {
         msg.author
           .send(chartsEmbed)
           .then(() => functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`))
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
         if (msg.guild != null) {
           chartsEmbed = new Discord.RichEmbed()
@@ -1283,129 +1283,71 @@ bot.on('message', async msg => {
           msg.channel
             .send(chartsEmbed)
             .then()
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
-        if (
-          ICAO[0] == 'N' ||
-          ICAO[0] == 'O' ||
-          ICAO[0] == 'P' ||
-          ICAO[0] == 'S' ||
-          ICAO[0] == 'T' ||
-          ICAO[0] == 'U' ||
-          ICAO[0] == 'V' ||
-          ICAO[0] == 'W' ||
-          ICAO[0] == 'X'
-        ) {
-          let avBotChartURL = '';
-          if (
-            ICAO[0] == 'N' ||
-            ICAO[0] == 'O' ||
-            ICAO[0] == 'P' ||
-            ICAO[0] == 'S' ||
-            ICAO[0] == 'T'
-          ) {
-            avBotChartURL = `https://avbotserver3.herokuapp.com/chart/${ICAO}`;
-          } else if (ICAO[0] == 'U' || ICAO[0] == 'V' || ICAO[0] == 'W' || ICAO[0] == 'X') {
-            avBotChartURL = `https://avbotserver4.herokuapp.com/chart/${ICAO}`;
-          }
-          request(avBotChartURL, (err, res2, body) => {
-            if (res2.statusCode == 200) {
-              let chartsEmbed = new Discord.RichEmbed()
-                .setTitle(`Chart for ${ICAO}`)
-                .setColor(successColor)
-                .setDescription(`[Click here for ${ICAO} Charts](${avBotChartURL})`)
-                .setFooter(
-                  `This is not a source for official charts. Please obtain an official chart from the appropriate agency`
-                );
-
-              msg.author
-                .send(chartsEmbed)
-                .then(() => functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`))
-                .catch(error => functions.logger(`error`, JSON.stringify(error)));
-
-              if (msg.guild != null) {
-                chartsEmbed = new Discord.RichEmbed()
-                  .setTitle(`Chart for ${ICAO}`)
-                  .setColor(successColor)
-                  .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
-
-                msg.channel
-                  .send(chartsEmbed)
-                  .then()
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
-              }
-            } else {
-              if (icao[ICAO]) {
-                let chartErrorEmbed = new Discord.RichEmbed()
-                  .setTitle(`Chart for ${ICAO}`)
-                  .setColor(errorColor)
-                  .setDescription(
-                    `Sorry ${msg.author}, ${ICAO} chart is not available in our database`
-                  );
-
-                msg.channel
-                  .send(chartErrorEmbed)
-                  .then(() =>
-                    functions.logger(
-                      `warn`,
-                      `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
-                    )
-                  )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
-              } else {
-                let chartErrorEmbed = new Discord.RichEmbed()
-                  .setTitle(`Chart for ${ICAO}`)
-                  .setColor(errorColor)
-                  .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
-
-                msg.channel
-                  .send(chartErrorEmbed)
-                  .then(() =>
-                    functions.logger(
-                      `warn`,
-                      `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
-                    )
-                  )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
-              }
-            }
-          });
-        } else {
-          if (icao[ICAO]) {
-            let chartErrorEmbed = new Discord.RichEmbed()
+        request(`http://charts.avbot.in/${ICAO}.pdf`, (err, res2, body) => {
+          if (res2.statusCode == 200) {
+            let chartsEmbed = new Discord.RichEmbed()
               .setTitle(`Chart for ${ICAO}`)
-              .setColor(errorColor)
-              .setDescription(
-                `Sorry ${msg.author}, ${ICAO} chart is not available in our database`
+              .setColor(successColor)
+              .setDescription(`[Click here for ${ICAO} Charts](http://charts.avbot.in/${ICAO}.pdf)`)
+              .setFooter(
+                `This is not a source for official charts. Please obtain an official chart from the appropriate agency`
               );
 
-            msg.channel
-              .send(chartErrorEmbed)
-              .then(() =>
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
-                )
-              )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
-          } else {
-            let chartErrorEmbed = new Discord.RichEmbed()
-              .setTitle(`Chart for ${ICAO}`)
-              .setColor(errorColor)
-              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+            msg.author
+              .send(chartsEmbed)
+              .then(() => functions.logger(`info`, `${ICAO} charts sent to ${msg.author.tag}`))
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
-            msg.channel
-              .send(chartErrorEmbed)
-              .then(() =>
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
+            if (msg.guild != null) {
+              chartsEmbed = new Discord.RichEmbed()
+                .setTitle(`Chart for ${ICAO}`)
+                .setColor(successColor)
+                .setDescription(`${msg.author}, ${ICAO} chart has been sent to you`);
+
+              msg.channel
+                .send(chartsEmbed)
+                .then()
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
+          } else {
+            if (icao[ICAO]) {
+              let chartErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Chart for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(
+                  `Sorry ${msg.author}, ${ICAO} chart is not available in our database`
+                );
+
+              msg.channel
+                .send(chartErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} charts but was not available in our database`
+                  )
                 )
-              )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            } else {
+              let chartErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`Chart for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO`);
+
+              msg.channel
+                .send(chartErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} charts but ${ICAO} is an invalid ICAO`
+                  )
+                )
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
           }
-        }
+        });
       }
     });
   }
@@ -1415,7 +1357,7 @@ bot.on('message', async msg => {
 
     let url = avwx + `metar/${ICAO}?options=info,translate,speech`;
 
-    request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
       let noContent = false;
       let metar = { error: false };
       try {
@@ -1438,7 +1380,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let metarErrorEmbed = new Discord.RichEmbed()
             .setTitle(`METAR for ${ICAO}`)
@@ -1453,7 +1395,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let raw = metar.raw;
@@ -1537,40 +1479,40 @@ bot.on('message', async msg => {
         }
 
         if (metar.temperature) {
-          let temperatureInF = 0;
+          let temperatureInF = '';
           if (metar.units.temperature === 'C') {
-            temperatureInF = metar.temperature.value * (9 / 5) + 32;
+            temperatureInF = (metar.temperature.value * (9 / 5) + 32).toString();
           }
-          if (temperatureInF < 0) {
-            temperatureInF = `minus ${functions.ntw(Math.floor(temperatureInF) * -1)}`;
+          if (+temperatureInF < 0) {
+            temperatureInF = `minus ${functions.ntw(+Math.floor(+temperatureInF) * -1)}`;
           } else {
-            temperatureInF = functions.ntw(temperatureInF);
+            temperatureInF = functions.ntw(+temperatureInF);
           }
           readable += `**Temperature : **${metar.temperature.spoken} degrees Celcius (${temperatureInF} degrees Fahrenheit) \n`;
         }
 
         if (metar.dewpoint) {
-          let dewpointInF = 0;
+          let dewpointInF = '';
           if (metar.units.temperature === 'C') {
-            dewpointInF = metar.dewpoint.value * (9 / 5) + 32;
+            dewpointInF = (metar.dewpoint.value * (9 / 5) + 32).toString();
           }
-          if (dewpointInF < 0) {
-            dewpointInF = `minus ${functions.ntw(Math.floor(dewpointInF) * -1)}`;
+          if (+dewpointInF < 0) {
+            dewpointInF = `minus ${functions.ntw(+Math.floor(+dewpointInF) * -1)}`;
           } else {
-            dewpointInF = functions.ntw(dewpointInF);
+            dewpointInF = functions.ntw(+dewpointInF);
           }
           readable += `**Dew Point : **${metar.dewpoint.spoken} degrees Celcius (${dewpointInF} degrees Fahrenheit) \n`;
         }
 
         if (metar.altimeter && metar.units.altimeter === 'hPa') {
-          let altimeterInHg = 0;
-          altimeterInHg = metar.altimeter.value / 33.8638866666667;
-          altimeterInHg = functions.ntw(altimeterInHg);
+          let altimeterInHg = '';
+          altimeterInHg = (metar.altimeter.value / 33.8638866666667).toString();
+          altimeterInHg = functions.ntw(+altimeterInHg);
           readable += `**Altimeter : ** ${metar.altimeter.spoken} in hPa (${altimeterInHg} in Hg) \n`;
         } else if (metar.altimeter && metar.units.altimeter === 'inHg') {
-          let altimeterInhPa = 0;
-          altimeterInhPa = metar.altimeter.value * 33.8638866666667;
-          altimeterInhPa = functions.ntw(altimeterInhPa);
+          let altimeterInhPa = '';
+          altimeterInhPa = (metar.altimeter.value * 33.8638866666667).toString();
+          altimeterInhPa = functions.ntw(+altimeterInhPa);
           readable += `**Altimeter : ** ${altimeterInhPa} in hPa (${metar.altimeter.spoken} in Hg) \n`;
         }
 
@@ -1608,7 +1550,7 @@ bot.on('message', async msg => {
         msg.channel
           .send(metarEmbed)
           .then(() => functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`))
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1618,7 +1560,7 @@ bot.on('message', async msg => {
 
     let url = avwx + `taf/${ICAO}?options=info,translate,speech`;
 
-    request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
       let noContent = false;
       let taf = { error: false };
       try {
@@ -1643,7 +1585,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let tafErrorEmbed = new Discord.RichEmbed()
             .setTitle(`TAF for ${ICAO}`)
@@ -1658,7 +1600,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let raw = `**Raw Report**\n ${taf.raw}\n`;
@@ -1717,7 +1659,7 @@ bot.on('message', async msg => {
         msg.channel
           .send(tafEmbed)
           .then(() => functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`))
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1725,7 +1667,7 @@ bot.on('message', async msg => {
   if (cmd == `${prefix}notam` || cmd == `${prefix}notams`) {
     if (args.length === 1) return;
 
-    notams.fetch(`${ICAO}`, { format: 'ICAO' }).then(result => {
+    notams.fetch(`${ICAO}`, { format: 'ICAO' }).then((result) => {
       if (result && result[0] && result[0].notams[1]) {
         let notamEmbed = new Discord.RichEmbed()
           .setTitle(`NOTAMs for ${result[0].icao}`)
@@ -1738,7 +1680,7 @@ bot.on('message', async msg => {
         msg.channel
           .send(notamEmbed)
           .then(() => functions.logger(`info`, `${ICAO} NOTAM sent to ${msg.author.tag}`))
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       } else {
         if (icao[ICAO]) {
           let notamErrorEmbed = new Discord.RichEmbed()
@@ -1754,7 +1696,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} NOTAM but NOTAM not available.`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let notamErrorEmbed = new Discord.RichEmbed()
             .setTitle(`NOTAMs for ${ICAO}`)
@@ -1769,7 +1711,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} NOTAMs but ${ICAO} is an invalid ICAO `
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       }
     });
@@ -1780,7 +1722,7 @@ bot.on('message', async msg => {
 
     let url = avwx + `station/${ICAO}`;
 
-    request({ url: url, headers: avwxHeaders }, function(err, response, body) {
+    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
       let noContent = false;
       let info = { error: false };
       try {
@@ -1803,7 +1745,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} Info but got error::: ${info.error}`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           let icaoErrorEmbed = new Discord.RichEmbed()
             .setTitle(`${ICAO}`)
@@ -1818,7 +1760,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ${ICAO} Info but ${ICAO} is an invalid ICAO `
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let icaoEmbed = new Discord.RichEmbed().setTitle(`${ICAO}`).setColor(successColor);
@@ -1864,7 +1806,7 @@ bot.on('message', async msg => {
         if (info.runways) {
           let r = info.runways;
           let runways = '';
-          r.forEach(rw => {
+          r.forEach((rw) => {
             if (rw.length_ft != 0 && rw.width_ft != 0) {
               runways += `${rw.ident1}-${rw.ident2} : Length - ${rw.length_ft}, Width - ${rw.width_ft}\n`;
             } else {
@@ -1889,7 +1831,7 @@ bot.on('message', async msg => {
         msg.channel
           .send(icaoEmbed)
           .then(() => functions.logger(`info`, `${ICAO} Info sent to ${msg.author.tag}`))
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -1904,7 +1846,7 @@ bot.on('message', async msg => {
       msg.channel
         .send(zuluEmbed)
         .then(() => functions.logger(`info`, `Zulu time sent to ${msg.author.tag}`))
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     } else {
       if (params.length == 2) {
         ICAO = params[0].toUpperCase();
@@ -1928,13 +1870,13 @@ bot.on('message', async msg => {
                   `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${timeParam} is not a valid time`
                 )
               )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
           } else {
             var latLong = icao[ICAO];
             var lat = latLong[0];
             var long = latLong[1];
             let url = `http://api.geonames.org/timezoneJSON?formatted=true&lat=${lat}&lng=${long}&username=targaryen&style=full`;
-            request(url, function(err, response, body) {
+            request(url, function (err, response, body) {
               if (err) {
                 let state = false;
               } else {
@@ -1948,8 +1890,7 @@ bot.on('message', async msg => {
                   mm = '0' + mm;
                 }
                 timeTemp += hh + ':' + mm;
-                timeTemp = moment.tz(timeTemp, timeZone);
-                let timeToSend = timeTemp.utc().format('DD/MM HH:mm');
+                let timeToSend = moment.tz(timeTemp, timeZone).utc().format('DD/MM HH:mm');
 
                 let zuluEmbed = new Discord.RichEmbed()
                   .setTitle(`ZULU time at ${ICAO} when local time is ${timeParam}hrs`)
@@ -1961,7 +1902,7 @@ bot.on('message', async msg => {
                   .then(() =>
                     functions.logger(`info`, `ZULU ${ICAO} ${timeParam} sent to ${msg.author.tag}`)
                   )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
               }
             });
           }
@@ -1979,7 +1920,7 @@ bot.on('message', async msg => {
                 `${msg.author.tag} asked for ZULU Time at ${ICAO} but ${ICAO} is an invalid ICAO `
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let zuluErrorEmbed = new Discord.RichEmbed()
@@ -1996,7 +1937,7 @@ bot.on('message', async msg => {
               `${msg.author.tag} asked for Zulu time but arguments were invalid`
             )
           )
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     }
   }
@@ -2010,7 +1951,7 @@ bot.on('message', async msg => {
     let metarAvailable = true;
     let chartAvailable = true;
 
-    request({ url: metarURL, headers: avwxHeaders }, function(err, response, body) {
+    request({ url: metarURL, headers: avwxHeaders }, function (err, response, body) {
       let rawMetar = '';
       let readableMetar = '';
       let noContent = false;
@@ -2031,10 +1972,10 @@ bot.on('message', async msg => {
         method: 'HEAD',
         host: 'vau.aero',
         port: 80,
-        path: `/navdb/chart/${ICAO}.pdf`
+        path: `/navdb/chart/${ICAO}.pdf`,
       };
 
-      let req = http.request(options, function(res) {
+      let req = http.request(options, function (res) {
         if (res.statusCode != 200) {
           chartAvailable = false;
         }
@@ -2063,7 +2004,7 @@ bot.on('message', async msg => {
           msg.channel
             .send(briefEmbed)
             .then(() => functions.logger(`info`, `${ICAO} Briefing sent to ${msg.author.tag}`))
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
           if (icao[ICAO]) {
             let briefErrorEmbed = new Discord.RichEmbed()
@@ -2079,7 +2020,7 @@ bot.on('message', async msg => {
                   `${msg.author.tag} asked for briefing ${ICAO} but briefing not available`
                 )
               )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
           } else {
             let briefErrorEmbed = new Discord.RichEmbed()
               .setTitle(`Briefing for ${ICAO}`)
@@ -2094,7 +2035,7 @@ bot.on('message', async msg => {
                   `${msg.author.tag} asked for briefing ${ICAO} but ${ICAO} is an invalid ICAO `
                 )
               )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
           }
         }
       });
@@ -2108,7 +2049,7 @@ bot.on('message', async msg => {
         if (params.length == 2) {
           let from = params[0].toUpperCase();
           let to = params[1].toUpperCase();
-          request(`${routeAPI}/search/plans?fromICAO=${from}&toICAO=${to}&limit=1`, function(
+          request(`${routeAPI}/search/plans?fromICAO=${from}&toICAO=${to}&limit=1`, function (
             err,
             response,
             body
@@ -2127,20 +2068,20 @@ bot.on('message', async msg => {
                     `${from} ${to} route requested by ${msg.author.tag} was not available.`
                   )
                 )
-                .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             } else {
               let id = JSON.parse(body)[0].id;
-              request(`${routeAPI}/plan/${id}`, function(err, response, body) {
+              request(`${routeAPI}/plan/${id}`, function (err, response, body) {
                 let route = [];
                 let nodes = JSON.parse(body).route.nodes;
-                nodes = nodes.filter(e => {
+                nodes = nodes.filter((e) => {
                   return (
                     e.type === 'APT' || e.type === 'VOR' || e.type === 'DME' || e.type === 'FIX'
                   );
                 });
                 let previous = null;
                 let previousVOR = null;
-                nodes.forEach(node => {
+                nodes.forEach((node) => {
                   if (node.type === 'FIX') {
                     if (node.via && node.via.ident === previous && !previousVOR) {
                       route.pop();
@@ -2167,7 +2108,7 @@ bot.on('message', async msg => {
                   }
                 });
                 let message = '';
-                route.forEach(node => {
+                route.forEach((node) => {
                   if (node.type != 'path') {
                     message += `**${node.ident}** `;
                   } else {
@@ -2187,7 +2128,7 @@ bot.on('message', async msg => {
                   .then(() =>
                     functions.logger(`info`, `${from}-${to} route sent to ${msg.author.tag}`)
                   )
-                  .catch(error => functions.logger(`error`, JSON.stringify(error)));
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
               });
             }
           });
@@ -2205,7 +2146,7 @@ bot.on('message', async msg => {
                 `${from} ${to} route with invalid arguments requested by ${msg.author.tag}`
               )
             )
-            .catch(error => functions.logger(`error`, JSON.stringify(error)));
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
       } else {
         let routeErrorEmbed = new Discord.RichEmbed()
@@ -2223,7 +2164,7 @@ bot.on('message', async msg => {
               `${msg.author.tag} tried to use premium feature (Route) [EXPIRED].`
             )
           )
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     } else {
       let routeErrorEmbed = new Discord.RichEmbed()
@@ -2238,7 +2179,7 @@ bot.on('message', async msg => {
         .then(() =>
           functions.logger(`error`, `${msg.author.tag} tried to use premium feature (Route).`)
         )
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2253,7 +2194,7 @@ bot.on('message', async msg => {
     msg.author
       .send(linkEmbed)
       .then(() => functions.logger(`info`, `Bot link sent to ${msg.author.tag}`))
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
     if (msg.guild != null) {
       let linkEmbed2 = new Discord.RichEmbed()
@@ -2266,7 +2207,7 @@ bot.on('message', async msg => {
       msg.channel
         .send(linkEmbed2)
         .then()
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2281,7 +2222,7 @@ bot.on('message', async msg => {
     msg.author
       .send(inviteEmbed)
       .then(() => functions.logger(`info`, `Server link sent to ${msg.author.tag}`))
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
     if (msg.guild != null) {
       let inviteEmbed2 = new Discord.RichEmbed()
@@ -2294,7 +2235,7 @@ bot.on('message', async msg => {
       msg.channel
         .send(inviteEmbed2)
         .then()
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2312,7 +2253,7 @@ bot.on('message', async msg => {
     msg.channel
       .send(guildsEmbed)
       .then(() => functions.logger(`info`, `Guilds sent to ${msg.author.tag}`))
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
   }
 
   if (cmd == `${prefix}purge`) {
@@ -2323,7 +2264,7 @@ bot.on('message', async msg => {
     async function clear() {
       msg.delete();
       const fetched = await msg.channel.fetchMessages({
-        limit: 50
+        limit: 50,
       });
       msg.channel.bulkDelete(fetched);
     }
@@ -2355,7 +2296,7 @@ bot.on('message', async msg => {
           `Sent uptime (${hours} hrs, ${minutes} mins, ${~~seconds} secs) to ${msg.author.tag}`
         )
       )
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
   }
 
   if (cmd == `${prefix}ping`) {
@@ -2368,7 +2309,7 @@ bot.on('message', async msg => {
     let editMsg = await msg.channel
       .send(temp)
       .then()
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     let pingEmbed = new Discord.RichEmbed()
       .setTitle('🏓 Pong!')
       .setColor([53, 254, 75])
@@ -2377,11 +2318,12 @@ bot.on('message', async msg => {
     editMsg
       .edit(pingEmbed)
       .then()
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     functions.logger(
       `info`,
-      `Sent ping (Roundtrip: ${editMsg.createdTimestamp -
-        msg.createdTimestamp}ms, Heartbeat: ${~~bot.ping}ms) to ${msg.author.tag}`
+      `Sent ping (Roundtrip: ${
+        editMsg.createdTimestamp - msg.createdTimestamp
+      }ms, Heartbeat: ${~~bot.ping}ms) to ${msg.author.tag}`
     );
   }
 
@@ -2394,12 +2336,12 @@ bot.on('message', async msg => {
 
     await msg.channel
       .send(restartEmbed)
-      .then(message => bot.destroy())
+      .then((message) => bot.destroy())
       .then(() => bot.login(process.env.TOKEN))
-      .then(message => {
+      .then((message) => {
         msg.channel.lastMessage.delete();
       })
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     functions.logger(`info`, `Manually restarted the bot by ${msg.author.tag}`);
   }
 
@@ -2426,7 +2368,7 @@ bot.on('message', async msg => {
               `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`
             )
           )
-          .catch(error => functions.logger(`error`, JSON.stringify(error)));
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     });
   }
@@ -2460,7 +2402,7 @@ bot.on('message', async msg => {
                   }`
                 )
               )
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
           }
         }
       );
@@ -2482,7 +2424,7 @@ bot.on('message', async msg => {
             }`
           )
         )
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2498,15 +2440,15 @@ bot.on('message', async msg => {
       .setFooter(`regards Rahul Singh#6615`);
 
     let count = 0;
-    bot.guilds.forEach(guild => {
-      let channels = guild.channels.filter(c => c.type === 'text');
-      channels.forEach(channel => {
-        channel.members.forEach(member => {
+    bot.guilds.forEach((guild) => {
+      let channels = guild.channels.filter((c) => c.type === 'text');
+      channels.forEach((channel) => {
+        channel.members.forEach((member) => {
           if (bot.user.id == member.user.id) {
             channel
               .send(broadcastEmbed)
               .then()
-              .catch(error => functions.logger(`error`, JSON.stringify(error)));
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
           }
         });
       });
@@ -2543,7 +2485,7 @@ bot.on('message', async msg => {
           `AvBot Premium activated for ${premiumGuild.guild_name} by ${msg.author.tag}`
         )
       )
-      .catch(error => functions.logger(`error`, JSON.stringify(error)));
+      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
   }
 
   // if (cmd == `${prefix}leave`) {
@@ -2615,7 +2557,7 @@ bot.on('message', async msg => {
       msg.channel
         .send(helpEmbed)
         .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 
@@ -2682,14 +2624,14 @@ bot.on('message', async msg => {
       msg.channel
         .send(helpEmbed)
         .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
-        .catch(error => functions.logger(`error`, JSON.stringify(error)));
+        .catch((error) => functions.logger(`error`, JSON.stringify(error)));
     }
   }
 });
 
 bot.login(process.env.TOKEN).then(
-  token => {},
-  error => {
+  (token) => {},
+  (error) => {
     console.log(error);
     functions.logger(`error`, error);
     process.exit(1);
