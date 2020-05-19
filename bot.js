@@ -305,7 +305,7 @@ bot.on('ready', async () => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
           fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             let contents_arr = contents.split(';\n;');
-            let general = contents_arr[0].split('!GENERAL:\n')[1];
+            let general = contents_arr[0].split('!GENERAL:')[1];
             let generalArray = general.split('\n');
             lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
             functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
@@ -314,8 +314,7 @@ bot.on('ready', async () => {
       });
     } else {
       let contents_arr = contents.split(';\n;');
-      let general = contents_arr[0].split('!GENERAL:\n')[1];
-      let clients = contents_arr[1].split('!CLIENTS:\n')[1];
+      let general = contents_arr[0].split('!GENERAL:')[1];
       let generalArray = general.split('\n');
       lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
 
@@ -502,8 +501,8 @@ bot.on('message', async (msg) => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
           fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             let contents_arr = contents.split(';\n;');
-            let general = contents_arr[0].split('!GENERAL:\n')[1];
-            let clients = contents_arr[1].split('!CLIENTS:\n')[1];
+            let general = contents_arr[0].split('!GENERAL:')[1];
+            let clients = contents_arr[1].split('!CLIENTS:')[1];
             let generalArray = general.split('\n');
             lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
             functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
@@ -646,8 +645,8 @@ bot.on('message', async (msg) => {
     } else {
       fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
         let contents_arr = contents.split(';\n;');
-        let general = contents_arr[0].split('!GENERAL:\n')[1];
-        let clients = contents_arr[1].split('!CLIENTS:\n')[1];
+        let general = contents_arr[0].split('!GENERAL:')[1];
+        let clients = contents_arr[1].split('!CLIENTS:')[1];
         let generalArray = general.split('\n');
         let clientsArray = clients.split('\n');
         let presentFlag = false;
