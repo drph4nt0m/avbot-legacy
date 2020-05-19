@@ -305,7 +305,7 @@ bot.on('ready', async () => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
           fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             contents = contents.split('!GENERAL:')[1];
-            let general = contents.split('!VOICE SERVERS:')[0];
+            let general = contents.split('!CLIENTS')[0];
             let generalArray = general.split('\n');
             lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
             functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
@@ -314,7 +314,7 @@ bot.on('ready', async () => {
       });
     } else {
       contents = contents.split('!GENERAL:')[1];
-      let general = contents.split('!VOICE SERVERS:')[0];
+      let general = contents.split('!CLIENTS')[0];
       let generalArray = general.split('\n');
       lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
 
@@ -326,7 +326,7 @@ bot.on('ready', async () => {
             functions.logger(`info`, `Vatsim Whazzup downloaded`);
             fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
               contents = contents.split('!GENERAL:')[1];
-              let general = contents.split('!VOICE SERVERS:')[0];
+              let general = contents.split('!CLIENTS')[0];
               let generalArray = general.split('\n');
               lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
               functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
@@ -501,9 +501,7 @@ bot.on('message', async (msg) => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
           fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
             contents = contents.split('!GENERAL:')[1];
-            let general = contents.split('!VOICE SERVERS:')[0];
-            contents = contents.split('!VOICE SERVERS:')[1];
-            let voiceServers = contents.split('!CLIENTS')[0];
+            let general = contents.split('!CLIENTS')[0];
             contents = contents.split('!CLIENTS')[1];
             let clients = contents.split('!SERVERS')[0];
             contents = contents.split('!SERVERS')[1];
@@ -651,8 +649,7 @@ bot.on('message', async (msg) => {
     } else {
       fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
         contents = contents.split('!GENERAL:')[1];
-        let general = contents.split('!VOICE SERVERS:')[0];
-        contents = contents.split('!VOICE SERVERS:')[1];
+        let general = contents.split('!CLIENTS')[0];
         let voiceServers = contents.split('!CLIENTS')[0];
         contents = contents.split('!CLIENTS')[1];
         let clients = contents.split('!SERVERS')[0];
@@ -718,58 +715,66 @@ bot.on('message', async (msg) => {
               presentFlag = true;
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-              request({ url: url, headers: avwxHeaders }, function (err, response, body) {
-                let noContent = false;
-                let info = { error: false };
-                try {
-                  info = JSON.parse(body);
-                } catch (error) {
-                  noContent = true;
-                }
-                if (noContent || info.error) {
-                  let vatsimEmbed = new Discord.RichEmbed()
-                    .setTitle(`VATSIM : ${ICAO}`)
-                    .setColor(successColor)
-                    .addField(`Call Sign`, `${decoded[0]}`, true)
-                    .addField(`CID`, `${decoded[1]}`, true)
-                    .addField(`Controller`, `${decoded[2]}`, true)
-                    .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                    .addField(`Frequency`, `${decoded[4]}`, true)
-                    // .addField(`ATIS`, `${decoded[35]}`, true)
-                    .setFooter(`Source: VATSIM API`);
+              request(
+                {
+                  url: url,
+                  headers: avwxHeaders,
+                },
+                function (err, response, body) {
+                  let noContent = false;
+                  let info = {
+                    error: false,
+                  };
+                  try {
+                    info = JSON.parse(body);
+                  } catch (error) {
+                    noContent = true;
+                  }
+                  if (noContent || info.error) {
+                    let vatsimEmbed = new Discord.RichEmbed()
+                      .setTitle(`VATSIM : ${ICAO}`)
+                      .setColor(successColor)
+                      .addField(`Call Sign`, `${decoded[0]}`, true)
+                      .addField(`CID`, `${decoded[1]}`, true)
+                      .addField(`Controller`, `${decoded[2]}`, true)
+                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                      .addField(`Frequency`, `${decoded[4]}`, true)
+                      // .addField(`ATIS`, `${decoded[35]}`, true)
+                      .setFooter(`Source: VATSIM API`);
 
-                  msg.channel
-                    .send(vatsimEmbed)
-                    .then(() =>
-                      functions.logger(
-                        `info`,
-                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                    msg.channel
+                      .send(vatsimEmbed)
+                      .then(() =>
+                        functions.logger(
+                          `info`,
+                          `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                        )
                       )
-                    )
-                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-                } else {
-                  let vatsimEmbed = new Discord.RichEmbed()
-                    .setTitle(`VATSIM : ${ICAO}`)
-                    .setColor(successColor)
-                    .addField(`Call Sign`, `${decoded[0]}`, true)
-                    .addField(`CID`, `${decoded[1]}`, true)
-                    .addField(`Controller`, `${decoded[2]}`, true)
-                    .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                    .addField(`Frequency`, `${decoded[4]}`, true)
-                    // .addField(`ATIS`, `${decoded[35]}`, true)
-                    .setFooter(`Source: VATSIM API`);
+                      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+                  } else {
+                    let vatsimEmbed = new Discord.RichEmbed()
+                      .setTitle(`VATSIM : ${ICAO}`)
+                      .setColor(successColor)
+                      .addField(`Call Sign`, `${decoded[0]}`, true)
+                      .addField(`CID`, `${decoded[1]}`, true)
+                      .addField(`Controller`, `${decoded[2]}`, true)
+                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
+                      .addField(`Frequency`, `${decoded[4]}`, true)
+                      // .addField(`ATIS`, `${decoded[35]}`, true)
+                      .setFooter(`Source: VATSIM API`);
 
-                  msg.channel
-                    .send(vatsimEmbed)
-                    .then(() =>
-                      functions.logger(
-                        `info`,
-                        `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                    msg.channel
+                      .send(vatsimEmbed)
+                      .then(() =>
+                        functions.logger(
+                          `info`,
+                          `Vatsim details for ${ICAO} sent to ${msg.author.tag}`
+                        )
                       )
-                    )
-                    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+                      .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+                  }
                 }
-              });
+              );
             }
           }
         });
