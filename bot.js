@@ -1713,6 +1713,64 @@ bot.on('message', async (msg) => {
     });
   }
 
+  if (cmd == `${prefix}atis`) {
+    if (args.length === 1) return;
+
+    request({
+      url: `${avbrief3}${ICAO}`
+    }, function (err, response, body) {
+        let atis = JSON.parse(body);
+        if (atis.success && atis.a_text) {
+          let tafEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(successColor)
+            .setDescription(atis.a_text)
+            .setFooter(
+              `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
+            );
+
+          msg.channel
+            .send(tafEmbed)
+            .then(() => functions.logger(`info`, `${ICAO} ATIS sent to ${msg.author.tag}`))
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+        } else {
+          if (icao[ICAO]) {
+            let tafErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`ATIS for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(
+                `${msg.author}, ATIS not found for ${ICAO}.`
+              );
+
+            msg.channel
+              .send(tafErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for ${ICAO} ATIS but got error.`
+                )
+              )
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+          } else {
+            let tafErrorEmbed = new Discord.RichEmbed()
+              .setTitle(`ATIS for ${ICAO}`)
+              .setColor(errorColor)
+              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+
+            msg.channel
+              .send(tafErrorEmbed)
+              .then(() =>
+                functions.logger(
+                  `warn`,
+                  `${msg.author.tag} asked for ${ICAO} ATIS but ${ICAO} is an invalid ICAO `
+                )
+              )
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+          }
+        }
+    })
+  }
+
   if (cmd == `${prefix}icao`) {
     if (args.length === 1) return;
 
