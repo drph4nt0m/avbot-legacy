@@ -1,3 +1,6 @@
+// AvBot
+// By rtargaryen
+
 const Discord = require('discord.js');
 const express = require('express');
 const mongoose = require('mongoose');

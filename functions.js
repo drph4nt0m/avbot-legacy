@@ -1,3 +1,6 @@
+// AvBot
+// By rtargaryen
+
 const converter = require('number-to-words');
 const request = require("request");
 
