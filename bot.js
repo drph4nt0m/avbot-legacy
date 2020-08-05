@@ -12,24 +12,16 @@ const DBL = require('dblapi.js');
 
 const icao = require('icao');
 const notams = require('notams');
-const winston = require('winston');
 const moment = require('moment-timezone');
 const functions = require('./functions.js');
 
 dotenv.config();
 
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+Sentry.init({
+  dsn: process.env.SENTRY_DSN
+});
 
 Sentry.configureScope(function (scope) {});
-
-process
-  .on('unhandledRejection', (reason, p) => {
-    functions.logger(`unhandledRejection`, `\`\`\`${reason}\`\`\``);
-  })
-  .on('uncaughtException', (err) => {
-    functions.logger(`uncaughtException`, `\`\`\`${err}\`\`\``);
-    process.exit(1);
-  });
 
 const app = express();
 
@@ -41,29 +33,6 @@ app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
 
 console.log(`Environment: ${app.get('env')}`);
 
-// const logger = winston.createLogger({
-//   level: "info",
-//   exitOnError: false,
-//   format: winston.format.combine(
-//     winston.format.timestamp({
-//       format: "YYYY-MM-DD HH:mm:ss"
-//     }),
-//     winston.format.printf(info => `${info.timestamp} ${info.level.toUpperCase()}: ${info.message}`)
-//   ),
-//   transports: [
-//     new winston.transports.Console({
-//       level: "info",
-//       format: winston.format.combine(
-//         winston.format.colorize(),
-//         winston.format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
-//       )
-//     }),
-//     new winston.transports.File({
-//       filename: "log"
-//     })
-//   ]
-// });
-
 mongoose.connect(process.env.M_LAB, {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -71,12 +40,24 @@ mongoose.connect(process.env.M_LAB, {
 });
 
 var guildSchema = new mongoose.Schema({
-  guild_id: { type: String, unique: true },
+  guild_id: {
+    type: String,
+    unique: true
+  },
   guild_name: String,
-  prefix: { type: String, default: '!' },
-  language: { type: String, default: 'en' },
+  prefix: {
+    type: String,
+    default: '!'
+  },
+  language: {
+    type: String,
+    default: 'en'
+  },
   premium: {
-    allowed: { type: Boolean, default: false },
+    allowed: {
+      type: Boolean,
+      default: false
+    },
     till: Date,
   },
 });
@@ -92,7 +73,10 @@ let premium = {
 const successColor = '#1a8fe3';
 const errorColor = '#bf3100';
 const avwx = 'https://avwx.rest/api/';
-const avwxHeaders = { Authorization: process.env.AVWX_TOKEN };
+const avwxHeaders = {
+  Authorization: process.env.AVWX_TOKEN
+};
+const avbrief3 = 'https://avbrief3.el.r.appspot.com/api?key=p2Yg8HenP8&icao='
 
 const routeAPI = 'https://api.flightplandatabase.com';
 
@@ -189,22 +173,13 @@ bot.on('ready', async () => {
   let guildArray = [];
 
   for (let i = 0; i < guildIds.length; i++) {
-    guildArray.push({ guild_id: guildIds[i], guild_name: guildNames[i] });
+    guildArray.push({
+      guild_id: guildIds[i],
+      guild_name: guildNames[i]
+    });
   }
 
   Guild.insertMany(guildArray, (err, guilds) => {});
-
-  // Guild.updateMany({}, {premium: {allowed: false}}, (err, guilds) => {
-  //   console.log(err);
-  // });
-
-  // Guild.collection.update({},
-  //   {$unset: {routeAccess: true}},
-  //   {multi: true, safe: true},
-  //   (err, guilds) => {
-  //     console.log(err);
-  //   }
-  // );
 
   console.log(
     '– - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
@@ -233,7 +208,7 @@ bot.on('ready', async () => {
     .send(restartEmbed)
     .then(() => {
       bot.user.setStatus('online');
-      bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+      bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
         type: 'WATCHING',
       });
     })
@@ -242,102 +217,6 @@ bot.on('ready', async () => {
   setInterval(() => {
     dbl.postStats(bot.guilds.size, null, null);
   }, 1800000);
-
-  fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
-    if (err) {
-      var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function (response) {
-        response.pipe(file);
-        response.on('end', () => {
-          functions.logger(`info`, `IVAO Whazzup downloaded`);
-          const extract = inly(from, to);
-
-          extract.on('end', () => {
-            functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
-              contents = contents.split('!GENERAL')[1];
-              let general = contents.split('!CLIENTS')[0];
-              let generalArray = general.split('\n');
-              lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
-              functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
-            });
-          });
-        });
-      });
-    } else {
-      contents = contents.split('!GENERAL')[1];
-      let general = contents.split('!CLIENTS')[0];
-      let generalArray = general.split('\n');
-      lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
-
-      if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
-        var file = fs.createWriteStream('whazzup.txt.gz');
-        var req = http.get(IVAOWhazzup, function (response) {
-          response.pipe(file);
-          response.on('end', () => {
-            functions.logger(`info`, `IVAO Whazzup downloaded`);
-            const extract = inly(from, to);
-
-            extract.on('end', () => {
-              functions.logger(`info`, `IVAO Whazzup extracted`);
-              fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
-                contents = contents.split('!GENERAL')[1];
-                let general = contents.split('!CLIENTS')[0];
-                let generalArray = general.split('\n');
-                lastTimeUpdateIVAO = +generalArray[3].split(' = ')[1];
-                functions.logger(`info`, `IVAO Whazzup updated at ${lastTimeUpdateIVAO}`);
-              });
-            });
-          });
-        });
-      } else {
-        functions.logger(`info`, `Whazzup last updated at ${lastTimeUpdateIVAO}`);
-      }
-    }
-  });
-
-  fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
-    if (err) {
-      var file = fs.createWriteStream('vatsim-data.txt');
-      var req = http.get(VatsimWhazzup, function (response) {
-        response.pipe(file);
-        response.on('end', () => {
-          functions.logger(`info`, `Vatsim Whazzup downloaded`);
-          fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
-            let contents_arr = contents.split(';\n;');
-            let general = contents_arr[0].split('!GENERAL:')[1];
-            let generalArray = general.split('\n');
-            lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
-            functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
-          });
-        });
-      });
-    } else {
-      let contents_arr = contents.split(';\n;');
-      let general = contents_arr[0].split('!GENERAL:')[1];
-      let generalArray = general.split('\n');
-      lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
-
-      if (lastTimeUpdateVatsim + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
-        var file = fs.createWriteStream('vatsim-data.txt');
-        var req = http.get(VatsimWhazzup, function (response) {
-          response.pipe(file);
-          response.on('end', () => {
-            functions.logger(`info`, `Vatsim Whazzup downloaded`);
-            fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
-              contents = contents.split('!GENERAL:')[1];
-              let general = contents.split('!CLIENTS')[0];
-              let generalArray = general.split('\n');
-              lastTimeUpdateVatsim = +generalArray[3].split(' = ')[1];
-              functions.logger(`info`, `Vatsim Whazzup updated at ${lastTimeUpdateVatsim}`);
-            });
-          });
-        });
-      } else {
-        functions.logger(`info`, `Vatsim last updated at ${lastTimeUpdateVatsim}`);
-      }
-    }
-  });
 });
 
 bot.on('guildCreate', (guild) => {
@@ -350,7 +229,7 @@ bot.on('guildCreate', (guild) => {
     `New guild added ${guild.name}, (guilds id is ${guild.id}). The guild added has ${guild.memberCount} members!`
   );
 
-  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+  bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
     type: 'WATCHING',
   });
 
@@ -388,14 +267,17 @@ bot.on('guildCreate', (guild) => {
     .then()
     .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
-  Guild.create({ guild_id: guild.id, guild_name: guild.name }, (err, guild) => {
+  Guild.create({
+    guild_id: guild.id,
+    guild_name: guild.name
+  }, (err, guild) => {
     if (err) console.log(err);
     else console.log(guild);
   });
 });
 
 bot.on('guildDelete', (guild) => {
-  bot.user.setActivity(`${prefix}help on ${bot.guilds.size} servers`, {
+  bot.user.setActivity(`$!help on ${bot.guilds.size} servers`, {
     type: 'WATCHING',
   });
 
@@ -441,7 +323,9 @@ bot.on('message', async (msg) => {
     scope.setContext('MESSAGE', msg);
   });
 
-  let currentGuild = await Guild.findOne({ guild_id: msg.guild.id });
+  let currentGuild = await Guild.findOne({
+    guild_id: msg.guild.id
+  });
   if (!currentGuild) {
     return;
   }
@@ -493,6 +377,7 @@ bot.on('message', async (msg) => {
   }
 
   if (cmd == `${prefix}vatsim`) {
+    if (args.length === 1) return;
     if (lastTimeUpdateVatsim + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('vatsim-data.txt');
       var req = http.get(VatsimWhazzup, function (response) {
@@ -567,9 +452,14 @@ bot.on('message', async (msg) => {
                   presentFlag = true;
 
                   var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-                  request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+                  request({
+                    url: url,
+                    headers: avwxHeaders
+                  }, function (err, response, body) {
                     let noContent = false;
-                    let info = { error: false };
+                    let info = {
+                      error: false
+                    };
                     try {
                       info = JSON.parse(body);
                     } catch (error) {
@@ -706,8 +596,7 @@ bot.on('message', async (msg) => {
               presentFlag = true;
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-              request(
-                {
+              request({
                   url: url,
                   headers: avwxHeaders,
                 },
@@ -791,6 +680,7 @@ bot.on('message', async (msg) => {
   }
 
   if (cmd == `${prefix}ivao`) {
+    if (args.length === 1) return;
     if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
       var req = http.get(IVAOWhazzup, function (response) {
@@ -875,9 +765,14 @@ bot.on('message', async (msg) => {
                     presentFlag = true;
 
                     var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-                    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+                    request({
+                      url: url,
+                      headers: avwxHeaders
+                    }, function (err, response, body) {
                       let noContent = false;
-                      let info = { error: false };
+                      let info = {
+                        error: false
+                      };
                       try {
                         info = JSON.parse(body);
                       } catch (error) {
@@ -1025,9 +920,14 @@ bot.on('message', async (msg) => {
               presentFlag = true;
 
               var url = `${avwx}station/${ICAO.substring(0, 4)}`;
-              request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+              request({
+                url: url,
+                headers: avwxHeaders
+              }, function (err, response, body) {
                 let noContent = false;
-                let info = { error: false };
+                let info = {
+                  error: false
+                };
                 try {
                   info = JSON.parse(body);
                 } catch (error) {
@@ -1100,6 +1000,7 @@ bot.on('message', async (msg) => {
   }
 
   if (cmd == `${prefix}online`) {
+    if (args.length === 1) return;
     let FIR = ICAO.substring(0, 2);
     if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
@@ -1168,7 +1069,7 @@ bot.on('message', async (msg) => {
                 let onlineErrorEmbed = new Discord.RichEmbed()
                   .setTitle(`IVAO : ${ICAO}`)
                   .setColor(errorColor)
-                  .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
+                  .setDescription(`No ATC is online under ${ICAO} FIR/Airport on IVAO network`)
                   .setFooter(`Source: IVAO API`);
 
                 msg.channel
@@ -1233,7 +1134,7 @@ bot.on('message', async (msg) => {
           let onlineErrorEmbed = new Discord.RichEmbed()
             .setTitle(`IVAO : ${ICAO}`)
             .setColor(errorColor)
-            .setDescription(`No ATC is online under ${ICAO} FIR on IVAO network`)
+            .setDescription(`No ATC is online under ${ICAO} FIR/Airport on IVAO network`)
             .setFooter(`Source: IVAO API`);
 
           msg.channel
@@ -1353,46 +1254,72 @@ bot.on('message', async (msg) => {
 
     let url = avwx + `metar/${ICAO}?options=info,translate,speech`;
 
-    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+    request({
+      url: url,
+      headers: avwxHeaders
+    }, function (err, response, body) {
       let noContent = false;
-      let metar = { error: false };
+      let metar = {
+        error: false
+      };
       try {
         metar = JSON.parse(body);
       } catch (error) {
         noContent = true;
       }
       if (noContent || metar.error) {
-        if (icao[ICAO]) {
-          let metarErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`METAR for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
+        request({
+          url: `${avbrief3}${ICAO}`
+        }, function (err, response, body) {
+          let metar = JSON.parse(body);
+          if (metar.success && metar.m_text) {
+            let metarEmbed = new Discord.RichEmbed()
+              .setTitle(`METAR for ${ICAO}`)
+              .setColor(successColor)
+              .addField('Raw Report', metar.m_text)
+              .setFooter(
+                `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
+              );
 
-          msg.channel
-            .send(metarErrorEmbed)
-            .then(() =>
-              functions.logger(
-                `warn`,
-                `${msg.author.tag} asked for ${ICAO} METAR but got error::: ${metar.error}`
-              )
-            )
-            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-        } else {
-          let metarErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`METAR for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+            msg.channel
+              .send(metarEmbed)
+              .then(() => functions.logger(`info`, `${ICAO} METAR sent to ${msg.author.tag}`))
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+          } else {
+            if (icao[ICAO]) {
+              let metarErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`METAR for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, no METAR station available at the moment near ${ICAO}`);
 
-          msg.channel
-            .send(metarErrorEmbed)
-            .then(() =>
-              functions.logger(
-                `warn`,
-                `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `
-              )
-            )
-            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-        }
+              msg.channel
+                .send(metarErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} METAR but got error.`
+                  )
+                )
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            } else {
+              let metarErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`METAR for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+
+              msg.channel
+                .send(metarErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} METAR but ${ICAO} is an invalid ICAO `
+                  )
+                )
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
+          }
+        })
+
       } else {
         let raw = metar.raw;
         let readable = '';
@@ -1556,48 +1483,73 @@ bot.on('message', async (msg) => {
 
     let url = avwx + `taf/${ICAO}?options=info,translate,speech`;
 
-    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+    request({
+      url: url,
+      headers: avwxHeaders
+    }, function (err, response, body) {
       let noContent = false;
-      let taf = { error: false };
+      let taf = {
+        error: false
+      };
       try {
         taf = JSON.parse(body);
       } catch (error) {
         noContent = true;
       }
       if (noContent || taf.error) {
-        if (icao[ICAO]) {
-          let tafErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`TAF for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(
-              `${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`
-            );
+        request({
+          url: `${avbrief3}${ICAO}`
+        }, function (err, response, body) {
+          let taf = JSON.parse(body);
+          if (taf.success && taf.t_text) {
+            let tafEmbed = new Discord.RichEmbed()
+              .setTitle(`TAF for ${ICAO}`)
+              .setColor(successColor)
+              .addField('Raw Report', taf.t_text)
+              .setFooter(
+                `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
+              );
 
-          msg.channel
-            .send(tafErrorEmbed)
-            .then(() =>
-              functions.logger(
-                `warn`,
-                `${msg.author.tag} asked for ${ICAO} TAF but got error::: ${taf.error}`
-              )
-            )
-            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-        } else {
-          let tafErrorEmbed = new Discord.RichEmbed()
-            .setTitle(`TAF for ${ICAO}`)
-            .setColor(errorColor)
-            .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+            msg.channel
+              .send(tafEmbed)
+              .then(() => functions.logger(`info`, `${ICAO} TAF sent to ${msg.author.tag}`))
+              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+          } else {
+            if (icao[ICAO]) {
+              let tafErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`TAF for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(
+                  `${msg.author}, TAF not found for ${ICAO}. There might not be a current report in ADDS.`
+                );
 
-          msg.channel
-            .send(tafErrorEmbed)
-            .then(() =>
-              functions.logger(
-                `warn`,
-                `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `
-              )
-            )
-            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-        }
+              msg.channel
+                .send(tafErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} TAF but got error.`
+                  )
+                )
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            } else {
+              let tafErrorEmbed = new Discord.RichEmbed()
+                .setTitle(`TAF for ${ICAO}`)
+                .setColor(errorColor)
+                .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+
+              msg.channel
+                .send(tafErrorEmbed)
+                .then(() =>
+                  functions.logger(
+                    `warn`,
+                    `${msg.author.tag} asked for ${ICAO} TAF but ${ICAO} is an invalid ICAO `
+                  )
+                )
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
+          }
+        })
       } else {
         let raw = `**Raw Report**\n ${taf.raw}\n`;
         let readable = `${raw}\n**Readable Report**\n`;
@@ -1663,7 +1615,9 @@ bot.on('message', async (msg) => {
   if (cmd == `${prefix}notam` || cmd == `${prefix}notams`) {
     if (args.length === 1) return;
 
-    notams.fetch(`${ICAO}`, { format: 'ICAO' }).then((result) => {
+    notams.fetch(`${ICAO}`, {
+      format: 'ICAO'
+    }).then((result) => {
       if (result && result[0] && result[0].notams[1]) {
         let notamEmbed = new Discord.RichEmbed()
           .setTitle(`NOTAMs for ${result[0].icao}`)
@@ -1776,9 +1730,14 @@ bot.on('message', async (msg) => {
 
     let url = avwx + `station/${ICAO}`;
 
-    request({ url: url, headers: avwxHeaders }, function (err, response, body) {
+    request({
+      url: url,
+      headers: avwxHeaders
+    }, function (err, response, body) {
       let noContent = false;
-      let info = { error: false };
+      let info = {
+        error: false
+      };
       try {
         info = JSON.parse(body);
       } catch (error) {
@@ -2005,11 +1964,16 @@ bot.on('message', async (msg) => {
     let metarAvailable = true;
     let chartAvailable = true;
 
-    request({ url: metarURL, headers: avwxHeaders }, function (err, response, body) {
+    request({
+      url: metarURL,
+      headers: avwxHeaders
+    }, function (err, response, body) {
       let rawMetar = '';
       let readableMetar = '';
       let noContent = false;
-      let metar = { error: false };
+      let metar = {
+        error: false
+      };
       try {
         metar = JSON.parse(body);
       } catch (error) {
@@ -2141,7 +2105,10 @@ bot.on('message', async (msg) => {
                       route.pop();
                       route.push(node);
                     } else if (node.via) {
-                      route.push({ ident: node.via.ident, type: 'path' });
+                      route.push({
+                        ident: node.via.ident,
+                        type: 'path'
+                      });
                       route.push(node);
                       previous = node.via.ident;
                     } else {
@@ -2153,7 +2120,10 @@ bot.on('message', async (msg) => {
                       route.pop();
                       route.push(node);
                     } else if (node.via) {
-                      route.push({ ident: node.via.ident, type: 'path' });
+                      route.push({
+                        ident: node.via.ident,
+                        type: 'path'
+                      });
                       route.push(node);
                     } else {
                       route.push(node);
@@ -2407,7 +2377,11 @@ bot.on('message', async (msg) => {
       return;
     }
     params[0] = params[0].toLowerCase();
-    Guild.findOneAndUpdate({ guild_id: msg.guild.id }, { prefix: params[0] }, (err, newGuild) => {
+    Guild.findOneAndUpdate({
+      guild_id: msg.guild.id
+    }, {
+      prefix: params[0]
+    }, (err, newGuild) => {
       if (err) console.log(err);
       else {
         let prefixEmbed = new Discord.RichEmbed()
@@ -2436,9 +2410,11 @@ bot.on('message', async (msg) => {
     }
 
     if (params[0].toLowerCase() == 'en' || params[0].toLowerCase() == 'pl') {
-      Guild.findOneAndUpdate(
-        { guild_id: msg.guild.id },
-        { language: params[0].toLowerCase() },
+      Guild.findOneAndUpdate({
+          guild_id: msg.guild.id
+        }, {
+          language: params[0].toLowerCase()
+        },
         (err, newGuild) => {
           if (err) console.log(err);
           else {
@@ -2520,12 +2496,19 @@ bot.on('message', async (msg) => {
     }
     let date = new Date();
     date.setDate(date.getDate() + 30);
-    Guild.updateOne(
-      { guild_id: params[0] },
-      { premium: { allowed: true, till: date } },
+    Guild.updateOne({
+        guild_id: params[0]
+      }, {
+        premium: {
+          allowed: true,
+          till: date
+        }
+      },
       (err, guilds) => {}
     );
-    let premiumGuild = await Guild.findOne({ guild_id: params[0] });
+    let premiumGuild = await Guild.findOne({
+      guild_id: params[0]
+    });
     let premiumEmbed = new Discord.RichEmbed()
       .setTitle(`AvBot Premium activated for ${premiumGuild.guild_name} [${params[0]}]`)
       .setColor(successColor)
@@ -2572,6 +2555,10 @@ bot.on('message', async (msg) => {
         .addField(
           `${prefix}notam [ICAO]`,
           `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`
+        )
+        .addField(
+          `${prefix}atis [ICAO]`,
+          `Example \"${prefix}atis VABB\". Gives you live ATIS of the chosen airport.`
         )
         .addField(
           `${prefix}brief [ICAO]`,

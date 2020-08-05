@@ -4,7 +4,8 @@
   "description": "AvBot v2",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
   },
   "author": "targaryen",
   "license": "ISC",
@@ -25,7 +26,6 @@
     "notams": "1.3.4",
     "number-to-words": "^1.2.4",
     "path": "^0.12.7",
-    "request": "^2.88.2",
-    "winston": "^3.2.1"
+    "request": "^2.88.2"
   }
 }
