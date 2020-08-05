@@ -1,6 +1,8 @@
 // AvBot
 // By rtargaryen
 
+// Code reformatted by BadBoyHaloCat
+
 const Discord = require('discord.js');
 const express = require('express');
 const mongoose = require('mongoose');
