@@ -167,6 +167,14 @@ bot.on('ready', async () => {
   let start_time = moment.tz(bot.readyAt, 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
   functions.logger(`info`, `AvBot v2 is online`);
 
+  try {
+    fs.unlinkSync('./whazzup.txt.gz')
+    fs.unlinkSync('./whazzup.txt')
+    fs.unlinkSync('./vatsim-data.txt')
+  } catch (error) {
+
+  }
+
   let guildIds = bot.guilds.map((e) => e.id);
   let guildNames = bot.guilds.map((e) => e.name);
 
