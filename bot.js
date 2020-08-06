@@ -264,13 +264,13 @@ bot.on('guildCreate', (guild) => {
   let newGuildEmbed = new Discord.RichEmbed()
     .setTitle(`Bot Added to Guild`)
     .setColor(successColor)
-    .addField(`Name`, `${guild.name}`)
-    .addField(`ID`, `${guild.id}`)
-    .addField(`Owner ID`, `${guild.ownerID}`)
-    .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
-    .addField(`Members`, `${guild.memberCount}`)
-    .addField(`Region`, `${guild.region}`)
-    .setFooter(`Joined at ${time_join}`);
+    .addField(`Name`, `${guild.name}` || 'unavailable')
+    .addField(`ID`, `${guild.id}` || 'unavailable')
+    .addField(`Owner ID`, `${guild.ownerID}` || 'unavailable')
+    .addField(`Owner`, `${owner.username}#${owner.discriminator}` || 'unavailable')
+    .addField(`Members`, `${guild.memberCount}` || 'unavailable')
+    .addField(`Region`, `${guild.region}` || 'unavailable')
+    .setFooter(`Joined at ${time_join}` || 'unavailable');
 
   bot.channels
     .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
@@ -310,12 +310,12 @@ bot.on('guildDelete', (guild) => {
   let removeGuildEmbed = new Discord.RichEmbed()
     .setTitle(`Bot Removed from Guild`)
     .setColor(errorColor)
-    .addField(`Name`, `${guild.name}`)
-    .addField(`ID`, `${guild.id}`)
-    .addField(`Owner ID`, `${guild.ownerID}`)
+    .addField(`Name`, `${guild.name}` || 'unavailable')
+    .addField(`ID`, `${guild.id}` || 'unavailable')
+    .addField(`Owner ID`, `${guild.ownerID}` || 'unavailable')
     // .addField(`Owner`, `${owner.username}#${owner.discriminator}`)
-    .addField(`Members`, `${guild.memberCount}`)
-    .addField(`Region`, `${guild.region}`)
+    .addField(`Members`, `${guild.memberCount}` || 'unavailable')
+    .addField(`Region`, `${guild.region}` || 'unavailable')
     .setFooter(`Removed at ${time_join}`);
 
   bot.channels
@@ -432,22 +432,22 @@ bot.on('message', async (msg) => {
                   let vatsimEmbed = new Discord.RichEmbed()
                     .setTitle(`VATSIM : ${ICAO}`)
                     .setColor(successColor)
-                    .addField(`Call Sign`, `${decoded[0]}`, true)
-                    .addField(`CID`, `${decoded[1]}`, true)
-                    .addField(`Pilot`, `${decoded[2]}`, true)
-                    .addField(`Departure`, `${decoded[11]}`, true)
-                    .addField(`Destination`, `${decoded[13]}`, true)
-                    .addField(`Transponder`, `${decoded[17]}`, true)
-                    .addField(`Latitude`, `${decoded[5]}`, true)
-                    .addField(`Longitude`, `${decoded[6]}`, true)
-                    .addField(`Altitude`, `${decoded[7]} ft`, true)
-                    .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
-                    .addField(`Cruising Speed`, `${decoded[10]}`, true)
-                    .addField(`Cruising Level`, `${decoded[12]}`, true)
-                    .addField(`Departure Time`, `${dt} Zulu`, true)
-                    .addField(`EET`, `${eeth}:${eetm}`, true)
-                    .addField(`Aircraft`, `${decoded[9]}`, true)
-                    .addField(`Route`, `${decoded[30]}`, true)
+                    .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                    .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                    .addField(`Pilot`, `${decoded[2]}` || 'unavailable', true)
+                    .addField(`Departure`, `${decoded[11]}` || 'unavailable', true)
+                    .addField(`Destination`, `${decoded[13]}` || 'unavailable', true)
+                    .addField(`Transponder`, `${decoded[17]}` || 'unavailable', true)
+                    .addField(`Latitude`, `${decoded[5]}` || 'unavailable', true)
+                    .addField(`Longitude`, `${decoded[6]}` || 'unavailable', true)
+                    .addField(`Altitude`, `${decoded[7]} ft` || 'unavailable', true)
+                    .addField(`Groundspeed`, `${decoded[8]} Knots` || 'unavailable', true)
+                    .addField(`Cruising Speed`, `${decoded[10]}` || 'unavailable', true)
+                    .addField(`Cruising Level`, `${decoded[12]}` || 'unavailable', true)
+                    .addField(`Departure Time`, `${dt} Zulu` || 'unavailable', true)
+                    .addField(`EET`, `${eeth}:${eetm}` || 'unavailable', true)
+                    .addField(`Aircraft`, `${decoded[9]}` || 'unavailable', true)
+                    .addField(`Route`, `${decoded[30]}` || 'unavailable', true)
                     .setFooter(`Source: VATSIM API`);
 
                   msg.channel
@@ -480,12 +480,12 @@ bot.on('message', async (msg) => {
                       let vatsimEmbed = new Discord.RichEmbed()
                         .setTitle(`VATSIM : ${ICAO}`)
                         .setColor(successColor)
-                        .addField(`Call Sign`, `${decoded[0]}`, true)
-                        .addField(`CID`, `${decoded[1]}`, true)
-                        .addField(`Controller`, `${decoded[2]}`, true)
-                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                        .addField(`Frequency`, `${decoded[4]}`, true)
-                        // .addField(`ATIS`, `${decoded[35]}`, true)
+                        .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                        .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                        .addField(`Controller`, `${decoded[2]}` || 'unavailable', true)
+                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}` || 'unavailable', true)
+                        .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                        // .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                         .setFooter(`Source: VATSIM API`);
 
                       msg.channel
@@ -501,12 +501,12 @@ bot.on('message', async (msg) => {
                       let vatsimEmbed = new Discord.RichEmbed()
                         .setTitle(`VATSIM : ${ICAO}`)
                         .setColor(successColor)
-                        .addField(`Call Sign`, `${decoded[0]}`, true)
-                        .addField(`CID`, `${decoded[1]}`, true)
-                        .addField(`Controller`, `${decoded[2]}`, true)
-                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                        .addField(`Frequency`, `${decoded[4]}`, true)
-                        // .addField(`ATIS`, `${decoded[35]}`, true)
+                        .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                        .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                        .addField(`Controller`, `${decoded[2]}` || 'unavailable', true)
+                        .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}` || 'unavailable', true)
+                        .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                        // .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                         .setFooter(`Source: VATSIM API`);
 
                       msg.channel
@@ -579,22 +579,22 @@ bot.on('message', async (msg) => {
               let vatsimEmbed = new Discord.RichEmbed()
                 .setTitle(`VATSIM : ${ICAO}`)
                 .setColor(successColor)
-                .addField(`Call Sign`, `${decoded[0]}`, true)
-                .addField(`CID`, `${decoded[1]}`, true)
-                .addField(`Pilot`, `${decoded[2]}`, true)
-                .addField(`Departure`, `${decoded[11]}`, true)
-                .addField(`Destination`, `${decoded[13]}`, true)
-                .addField(`Transponder`, `${decoded[17]}`, true)
-                .addField(`Latitude`, `${decoded[5]}`, true)
-                .addField(`Longitude`, `${decoded[6]}`, true)
-                .addField(`Altitude`, `${decoded[7]} ft`, true)
-                .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
-                .addField(`Cruising Speed`, `${decoded[10]}`, true)
-                .addField(`Cruising Level`, `${decoded[12]}`, true)
-                .addField(`Departure Time`, `${dt} Zulu`, true)
-                .addField(`EET`, `${eeth}:${eetm}`, true)
-                .addField(`Aircraft`, `${decoded[9]}`, true)
-                .addField(`Route`, `${decoded[30]}`, true)
+                .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                .addField(`Pilot`, `${decoded[2]}` || 'unavailable', true)
+                .addField(`Departure`, `${decoded[11]}` || 'unavailable', true)
+                .addField(`Destination`, `${decoded[13]}` || 'unavailable', true)
+                .addField(`Transponder`, `${decoded[17]}` || 'unavailable', true)
+                .addField(`Latitude`, `${decoded[5]}` || 'unavailable', true)
+                .addField(`Longitude`, `${decoded[6]}` || 'unavailable', true)
+                .addField(`Altitude`, `${decoded[7]} ft` || 'unavailable', true)
+                .addField(`Groundspeed`, `${decoded[8]} Knots` || 'unavailable', true)
+                .addField(`Cruising Speed`, `${decoded[10]}` || 'unavailable', true)
+                .addField(`Cruising Level`, `${decoded[12]}` || 'unavailable', true)
+                .addField(`Departure Time`, `${dt} Zulu` || 'unavailable', true)
+                .addField(`EET`, `${eeth}:${eetm}` || 'unavailable', true)
+                .addField(`Aircraft`, `${decoded[9]}` || 'unavailable', true)
+                .addField(`Route`, `${decoded[30]}` || 'unavailable', true)
                 .setFooter(`Source: VATSIM API`);
 
               msg.channel
@@ -625,12 +625,12 @@ bot.on('message', async (msg) => {
                     let vatsimEmbed = new Discord.RichEmbed()
                       .setTitle(`VATSIM : ${ICAO}`)
                       .setColor(successColor)
-                      .addField(`Call Sign`, `${decoded[0]}`, true)
-                      .addField(`CID`, `${decoded[1]}`, true)
-                      .addField(`Controller`, `${decoded[2]}`, true)
-                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                      .addField(`Frequency`, `${decoded[4]}`, true)
-                      // .addField(`ATIS`, `${decoded[35]}`, true)
+                      .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                      .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                      .addField(`Controller`, `${decoded[2]}` || 'unavailable', true)
+                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}` || 'unavailable', true)
+                      .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                      // .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                       .setFooter(`Source: VATSIM API`);
 
                     msg.channel
@@ -646,12 +646,12 @@ bot.on('message', async (msg) => {
                     let vatsimEmbed = new Discord.RichEmbed()
                       .setTitle(`VATSIM : ${ICAO}`)
                       .setColor(successColor)
-                      .addField(`Call Sign`, `${decoded[0]}`, true)
-                      .addField(`CID`, `${decoded[1]}`, true)
-                      .addField(`Controller`, `${decoded[2]}`, true)
-                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}`, true)
-                      .addField(`Frequency`, `${decoded[4]}`, true)
-                      // .addField(`ATIS`, `${decoded[35]}`, true)
+                      .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                      .addField(`CID`, `${decoded[1]}` || 'unavailable', true)
+                      .addField(`Controller`, `${decoded[2]}` || 'unavailable', true)
+                      .addField(`Position`, `${facilityTypes2IVAO[decoded[18]]}` || 'unavailable', true)
+                      .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                      // .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                       .setFooter(`Source: VATSIM API`);
 
                     msg.channel
@@ -744,22 +744,22 @@ bot.on('message', async (msg) => {
                     let ivaoEmbed = new Discord.RichEmbed()
                       .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                       .setColor(successColor)
-                      .addField(`Call Sign`, `${decoded[0]}`, true)
-                      .addField(`VID`, `${decoded[1]}`, true)
-                      .addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}`, true)
-                      .addField(`Departure`, `${decoded[11]}`, true)
-                      .addField(`Destination`, `${decoded[13]}`, true)
-                      .addField(`Transponder`, `${decoded[17]}`, true)
-                      .addField(`Latitude`, `${decoded[5]}`, true)
-                      .addField(`Longitude`, `${decoded[6]}`, true)
-                      .addField(`Altitude`, `${decoded[7]} ft`, true)
-                      .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
-                      .addField(`Cruising Speed`, `${decoded[10]}`, true)
-                      .addField(`Cruising Level`, `${decoded[12]}`, true)
-                      .addField(`Departure Time`, `${dt} Zulu`, true)
-                      .addField(`EET`, `${eeth}:${eetm}`, true)
-                      .addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
-                      .addField(`Route`, `${decoded[30]}`, true)
+                      .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                      .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                      .addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                      .addField(`Departure`, `${decoded[11]}` || 'unavailable', true)
+                      .addField(`Destination`, `${decoded[13]}` || 'unavailable', true)
+                      .addField(`Transponder`, `${decoded[17]}` || 'unavailable', true)
+                      .addField(`Latitude`, `${decoded[5]}` || 'unavailable', true)
+                      .addField(`Longitude`, `${decoded[6]}` || 'unavailable', true)
+                      .addField(`Altitude`, `${decoded[7]} ft` || 'unavailable', true)
+                      .addField(`Groundspeed`, `${decoded[8]} Knots` || 'unavailable', true)
+                      .addField(`Cruising Speed`, `${decoded[10]}` || 'unavailable', true)
+                      .addField(`Cruising Level`, `${decoded[12]}` || 'unavailable', true)
+                      .addField(`Departure Time`, `${dt} Zulu` || 'unavailable', true)
+                      .addField(`EET`, `${eeth}:${eetm}` || 'unavailable', true)
+                      .addField(`Aircraft`, `${decoded[9].split('/')[1]}` || 'unavailable', true)
+                      .addField(`Route`, `${decoded[30]}` || 'unavailable', true)
                       .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                       .setFooter(`Source: IVAO API`);
 
@@ -793,12 +793,12 @@ bot.on('message', async (msg) => {
                         let ivaoEmbed = new Discord.RichEmbed()
                           .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                           .setColor(successColor)
-                          .addField(`Call Sign`, `${decoded[0]}`, true)
-                          .addField(`VID`, `${decoded[1]}`, true)
-                          .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
-                          .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
-                          .addField(`Frequency`, `${decoded[4]}`, true)
-                          .addField(`ATIS`, `${decoded[35]}`, true)
+                          .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                          .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                          .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                          .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}` || 'unavailable', true)
+                          .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                          .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                           .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                           .setFooter(`Source: IVAO API`);
 
@@ -819,12 +819,12 @@ bot.on('message', async (msg) => {
                             } (open on Webeye)`
                           )
                           .setColor(successColor)
-                          .addField(`Call Sign`, `${decoded[0]}`, true)
-                          .addField(`VID`, `${decoded[1]}`, true)
-                          .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
-                          .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
-                          .addField(`Frequency`, `${decoded[4]}`, true)
-                          .addField(`ATIS`, `${decoded[35]}`, true)
+                          .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                          .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                          .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                          .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}` || 'unavailable', true)
+                          .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                          .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                           .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                           .setFooter(`Source: IVAO API`);
 
@@ -902,22 +902,22 @@ bot.on('message', async (msg) => {
               let ivaoEmbed = new Discord.RichEmbed()
                 .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                 .setColor(successColor)
-                .addField(`Call Sign`, `${decoded[0]}`, true)
-                .addField(`VID`, `${decoded[1]}`, true)
-                .addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}`, true)
-                .addField(`Departure`, `${decoded[11]}`, true)
-                .addField(`Destination`, `${decoded[13]}`, true)
-                .addField(`Transponder`, `${decoded[17]}`, true)
-                .addField(`Latitude`, `${decoded[5]}`, true)
-                .addField(`Longitude`, `${decoded[6]}`, true)
-                .addField(`Altitude`, `${decoded[7]} ft`, true)
-                .addField(`Groundspeed`, `${decoded[8]} Knots`, true)
-                .addField(`Cruising Speed`, `${decoded[10]}`, true)
-                .addField(`Cruising Level`, `${decoded[12]}`, true)
-                .addField(`Departure Time`, `${dt} Zulu`, true)
-                .addField(`EET`, `${eeth}:${eetm}`, true)
-                .addField(`Aircraft`, `${decoded[9].split('/')[1]}`, true)
-                .addField(`Route`, `${decoded[30]}`, true)
+                .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                .addField(`Rating`, `${pilotRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                .addField(`Departure`, `${decoded[11]}` || 'unavailable', true)
+                .addField(`Destination`, `${decoded[13]}` || 'unavailable', true)
+                .addField(`Transponder`, `${decoded[17]}` || 'unavailable', true)
+                .addField(`Latitude`, `${decoded[5]}` || 'unavailable', true)
+                .addField(`Longitude`, `${decoded[6]}` || 'unavailable', true)
+                .addField(`Altitude`, `${decoded[7]} ft` || 'unavailable', true)
+                .addField(`Groundspeed`, `${decoded[8]} Knots` || 'unavailable', true)
+                .addField(`Cruising Speed`, `${decoded[10]}` || 'unavailable', true)
+                .addField(`Cruising Level`, `${decoded[12]}` || 'unavailable', true)
+                .addField(`Departure Time`, `${dt} Zulu` || 'unavailable', true)
+                .addField(`EET`, `${eeth}:${eetm}` || 'unavailable', true)
+                .addField(`Aircraft`, `${decoded[9].split('/')[1]}` || 'unavailable', true)
+                .addField(`Route`, `${decoded[30]}` || 'unavailable', true)
                 .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                 .setFooter(`Source: IVAO API`);
 
@@ -948,12 +948,12 @@ bot.on('message', async (msg) => {
                   let ivaoEmbed = new Discord.RichEmbed()
                     .setTitle(`IVAO : ${ICAO} (open on Webeye)`)
                     .setColor(successColor)
-                    .addField(`Call Sign`, `${decoded[0]}`, true)
-                    .addField(`VID`, `${decoded[1]}`, true)
-                    .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
-                    .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
-                    .addField(`Frequency`, `${decoded[4]}`, true)
-                    .addField(`ATIS`, `${decoded[35]}`, true)
+                    .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                    .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                    .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                    .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}` || 'unavailable', true)
+                    .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                    .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                     .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                     .setFooter(`Source: IVAO API`);
 
@@ -969,12 +969,12 @@ bot.on('message', async (msg) => {
                       `IVAO : ${info.city} ${facilityTypes2IVAO[decoded[18]]} (open on Webeye)`
                     )
                     .setColor(successColor)
-                    .addField(`Call Sign`, `${decoded[0]}`, true)
-                    .addField(`VID`, `${decoded[1]}`, true)
-                    .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}`, true)
-                    .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}`, true)
-                    .addField(`Frequency`, `${decoded[4]}`, true)
-                    .addField(`ATIS`, `${decoded[35]}`, true)
+                    .addField(`Call Sign`, `${decoded[0]}` || 'unavailable', true)
+                    .addField(`VID`, `${decoded[1]}` || 'unavailable', true)
+                    .addField(`Rating`, `${atcRatingsIVAO[decoded[41]]}` || 'unavailable', true)
+                    .addField(`Position`, `${facilityTypesIVAO[decoded[18]]}` || 'unavailable', true)
+                    .addField(`Frequency`, `${decoded[4]}` || 'unavailable', true)
+                    .addField(`ATIS`, `${decoded[35]}` || 'unavailable', true)
                     .setURL(`${IVAOMapURL}/?callsign=${decoded[0]}`)
                     .setFooter(`Source: IVAO API`);
 
@@ -1062,8 +1062,8 @@ bot.on('message', async (msg) => {
 
                 found.forEach((ele) => {
                   onlineEmbed.addField(
-                    `${ele.callSign}`,
-                    `VID: ${ele.vid}, Frequency: ${ele.frequency}`
+                    `${ele.callSign}` || 'unavailable',
+                    `VID: ${ele.vid}, Frequency: ${ele.frequency}` || 'unavailable'
                   );
                 });
 
@@ -1132,7 +1132,7 @@ bot.on('message', async (msg) => {
             .setFooter(`Source: IVAO API`);
 
           found.forEach((ele) => {
-            onlineEmbed.addField(`${ele.callSign}`, `VID: ${ele.vid}, Frequency: ${ele.frequency}`);
+            onlineEmbed.addField(`${ele.callSign}` || 'unavailable', `VID: ${ele.vid}, Frequency: ${ele.frequency}` || 'unavailable');
           });
 
           msg.channel
@@ -1287,7 +1287,7 @@ bot.on('message', async (msg) => {
             let metarEmbed = new Discord.RichEmbed()
               .setTitle(`METAR for ${ICAO}`)
               .setColor(successColor)
-              .addField('Raw Report', metar.m_text)
+              .addField('Raw Report', metar.m_text || 'unavailable')
               .setFooter(
                 `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
               );
@@ -1474,9 +1474,9 @@ bot.on('message', async (msg) => {
         let metarEmbed = new Discord.RichEmbed()
           .setTitle(`METAR for ${ICAO}`)
           .setColor(successColor)
-          .addField('Raw Report', raw)
-          .addField('Readable Report', readable)
-          // .addField('Readable Report', metar.speech)
+          .addField('Raw Report', raw || 'unavailable')
+          .addField('Readable Report', readable || 'unavailable')
+          // .addField('Readable Report', metar.speech || 'unavailable')
           .setFooter(
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
@@ -1516,7 +1516,7 @@ bot.on('message', async (msg) => {
             let tafEmbed = new Discord.RichEmbed()
               .setTitle(`TAF for ${ICAO}`)
               .setColor(successColor)
-              .addField('Raw Report', taf.t_text)
+              .addField('Raw Report', taf.t_text || 'unavailable')
               .setFooter(
                 `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
               );
@@ -1610,7 +1610,7 @@ bot.on('message', async (msg) => {
         let tafEmbed = new Discord.RichEmbed()
           .setTitle(`TAF for ${ICAO}`)
           .setColor(successColor)
-          .setDescription(readable)
+          .setDescription(readable || 'unavailable')
           .setFooter(
             `This is not a source for official weather briefing. Please obtain a weather briefing from the appropriate agency `
           );
@@ -1633,7 +1633,7 @@ bot.on('message', async (msg) => {
         let notamEmbed = new Discord.RichEmbed()
           .setTitle(`NOTAMs for ${result[0].icao}`)
           .setColor(successColor)
-          .setDescription(`${result[0].notams[1]}`)
+          .setDescription(`${result[0].notams[1]}` || 'unavailable')
           .setFooter(
             'This is not a source for official briefing. Please use the appropriate forums'
           );
@@ -1689,7 +1689,7 @@ bot.on('message', async (msg) => {
           let tafEmbed = new Discord.RichEmbed()
             .setTitle(`ATIS for ${ICAO}`)
             .setColor(successColor)
-            .setDescription(atis.a_text)
+            .setDescription(atis.a_text || 'unavailable')
             .setFooter(
               `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
             );
@@ -1789,43 +1789,43 @@ bot.on('message', async (msg) => {
       } else {
         let icaoEmbed = new Discord.RichEmbed().setTitle(`${ICAO}`).setColor(successColor);
         if (info.icao) {
-          icaoEmbed.addField(`ICAO`, info.icao, true);
+          icaoEmbed.addField(`ICAO`, info.icao || 'unavailable', true);
         }
         if (info.iata) {
-          icaoEmbed.addField(`IATA`, info.iata, true);
+          icaoEmbed.addField(`IATA`, info.iata || 'unavailable', true);
         }
         if (info.name) {
           try {
-            icaoEmbed.addField(`Name`, decodeURIComponent(escape(info.name)));
+            icaoEmbed.addField(`Name`, decodeURIComponent(escape(info.name)) || 'unavailable');
           } catch (error) {
-            icaoEmbed.addField(`Name`, info.name);
+            icaoEmbed.addField(`Name`, info.name || 'unavailable');
           }
         }
         if (info.city) {
           try {
-            icaoEmbed.addField(`City`, decodeURIComponent(escape(info.city)), true);
+            icaoEmbed.addField(`City`, decodeURIComponent(escape(info.city)) || 'unavailable', true);
           } catch (error) {
-            icaoEmbed.addField(`City`, info.city, true);
+            icaoEmbed.addField(`City`, info.city || 'unavailable', true);
           }
         }
         if (info.country) {
-          icaoEmbed.addField(`Country`, info.country, true);
+          icaoEmbed.addField(`Country`, info.country || 'unavailable', true);
         }
         if (info.type) {
           icaoEmbed.addField(
             `Type`,
-            `${functions.capsFirst(info.type.split('_')[0])} Airport`,
+            `${functions.capsFirst(info.type.split('_')[0])} Airport` || 'unavailable',
             true
           );
         }
         if (info.latitude) {
-          icaoEmbed.addField(`Latitude`, info.latitude, true);
+          icaoEmbed.addField(`Latitude`, info.latitude || 'unavailable', true);
         }
         if (info.longitude) {
-          icaoEmbed.addField(`Longitude`, info.longitude, true);
+          icaoEmbed.addField(`Longitude`, info.longitude || 'unavailable', true);
         }
         if (info.elevation_ft) {
-          icaoEmbed.addField(`Elevation`, `${info.elevation_ft} ft`, true);
+          icaoEmbed.addField(`Elevation`, `${info.elevation_ft} ft` || 'unavailable', true);
         }
         if (info.runways) {
           let r = info.runways;
@@ -1837,7 +1837,7 @@ bot.on('message', async (msg) => {
               runways += `${rw.ident1}-${rw.ident2} : Length - NA, Width - NA\n`;
             }
           });
-          icaoEmbed.addField(`Runways`, runways);
+          icaoEmbed.addField(`Runways`, runways || 'unavailable');
         }
         if (info.website || info.wiki) {
           let links = '';
@@ -1849,7 +1849,7 @@ bot.on('message', async (msg) => {
           } else if (info.wiki) {
             links += `\nWikipedia: ${info.wiki}`;
           }
-          icaoEmbed.addField(`More Info`, links);
+          icaoEmbed.addField(`More Info`, links || 'unavailable');
         }
 
         msg.channel
@@ -1865,7 +1865,7 @@ bot.on('message', async (msg) => {
       let zuluEmbed = new Discord.RichEmbed()
         .setTitle('ZULU Time')
         .setColor(successColor)
-        .setDescription(`${timeform3} Z`);
+        .setDescription(`${timeform3} Z` || 'unavailable');
 
       msg.channel
         .send(zuluEmbed)
@@ -1919,7 +1919,7 @@ bot.on('message', async (msg) => {
                 let zuluEmbed = new Discord.RichEmbed()
                   .setTitle(`ZULU time at ${ICAO} when local time is ${timeParam}hrs`)
                   .setColor(successColor)
-                  .setDescription(`${timeToSend} Z`);
+                  .setDescription(`${timeToSend} Z` || 'unavailable');
 
                 msg.channel
                   .send(zuluEmbed)
@@ -2020,15 +2020,15 @@ bot.on('message', async (msg) => {
           if (metarAvailable) {
             briefEmbed.addField(
               `**METAR**`,
-              `**Raw Report**\n${rawMetar}\n**Readable Report**\n${readableMetar}`
+              `**Raw Report**\n${rawMetar}\n**Readable Report**\n${readableMetar}` || 'unavailable'
             );
           }
 
           if (chartAvailable) {
-            briefEmbed.addField(`**CHART**`, `[Click here for ${ICAO} Charts](${chartURL})`);
+            briefEmbed.addField(`**CHART**`, `[Click here for ${ICAO} Charts](${chartURL})` || 'unavailable');
           }
 
-          briefEmbed.addField(`**Zulu**`, `${timeform3} Z`);
+          briefEmbed.addField(`**Zulu**`, `${timeform3} Z` || 'unavailable');
 
           msg.channel
             .send(briefEmbed)
@@ -2153,7 +2153,7 @@ bot.on('message', async (msg) => {
                 let routeEmbed = new Discord.RichEmbed()
                   .setTitle(`Route: ${from} ${to}`)
                   .setColor(successColor)
-                  .setDescription(message)
+                  .setDescription(message || 'unavailable')
                   .setFooter(
                     `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
                   );
@@ -2283,7 +2283,7 @@ bot.on('message', async (msg) => {
     let guildsEmbed = new Discord.RichEmbed()
       .setTitle(`AvBot Guilds`)
       .setColor(successColor)
-      .setDescription(`\`\`\`${bot.guilds.size}\`\`\``);
+      .setDescription(`\`\`\`${bot.guilds.size}\`\`\`` || 'unavailable');
 
     msg.channel
       .send(guildsEmbed)
@@ -2348,8 +2348,8 @@ bot.on('message', async (msg) => {
     let pingEmbed = new Discord.RichEmbed()
       .setTitle('🏓 Pong!')
       .setColor([53, 254, 75])
-      .addField('Roundtrip', `${editMsg.createdTimestamp - msg.createdTimestamp}ms`, true)
-      .addField('Heartbeat', `${~~bot.ping}ms`, true);
+      .addField('Roundtrip', `${editMsg.createdTimestamp - msg.createdTimestamp}ms` || 'unavailable', true)
+      .addField('Heartbeat', `${~~bot.ping}ms` || 'unavailable', true);
     editMsg
       .edit(pingEmbed)
       .then()
@@ -2477,7 +2477,7 @@ bot.on('message', async (msg) => {
     let broadcastEmbed = new Discord.RichEmbed()
       .setTitle(`AvBot`)
       .setColor(successColor)
-      .setDescription(params.join(' '))
+      .setDescription(params.join(' ') || 'unavailable')
       .setFooter(`regards Rahul Singh#6615`);
 
     let count = 0;
