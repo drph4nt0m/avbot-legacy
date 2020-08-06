@@ -1,5 +1,10 @@
-// AvBot
-// By rtargaryen
+/**
+ * @author Rahul Singh
+ * @email rahul.singh12221998@gmail.com
+ * @create date 2020-08-06 22:46:42
+ * @modify date 2020-08-06 22:46:42
+ * @desc AvBot
+ */
 
 const converter = require('number-to-words');
 const request = require("request");
