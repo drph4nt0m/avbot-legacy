@@ -2,7 +2,7 @@
  * @author Rahul Singh
  * @email rahul.singh12221998@gmail.com
  * @create date 2020-08-06 22:46:00
- * @modify date 2020-08-06 22:46:23
+ * @modify date 2020-08-11 22:58:10
  * @desc AvBot
  */
 
@@ -16,7 +16,9 @@ const Sentry = require('@sentry/node');
 const inly = require('inly');
 const path = require('path');
 const fs = require('fs');
+const util = require('util');
 const DBL = require('dblapi.js');
+const textToSpeech = require('@google-cloud/text-to-speech');
 
 const icao = require('icao');
 const notams = require('notams');
@@ -29,7 +31,9 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN
 });
 
-Sentry.configureScope(function (scope) {});
+Sentry.configureScope((scope) => {});
+
+const tts_client = new textToSpeech.TextToSpeechClient();
 
 const app = express();
 
@@ -160,6 +164,8 @@ const atcRatingsIVAO = [
   'CAI',
 ];
 
+const atisPlayingChannels = {};
+
 const VatsimWhazzup = 'http://us.data.vatsim.net/vatsim-data.txt';
 
 const bot = new Discord.Client();
@@ -236,7 +242,7 @@ bot.on('ready', async () => {
 });
 
 bot.on('guildCreate', (guild) => {
-  Sentry.configureScope(function (scope) {
+  Sentry.configureScope((scope) => {
     scope.setContext('GUILD', guild);
   });
 
@@ -301,7 +307,7 @@ bot.on('guildDelete', (guild) => {
     return true;
   }
 
-  Sentry.configureScope(function (scope) {
+  Sentry.configureScope((scope) => {
     scope.setContext('GUILD', guild);
   });
 
@@ -333,7 +339,7 @@ bot.on('guildDelete', (guild) => {
 bot.on('message', async (msg) => {
   if (msg.author.bot || !msg.guild) return;
 
-  Sentry.configureScope(function (scope) {
+  Sentry.configureScope((scope) => {
     scope.setUser(msg.author);
     scope.setContext('GUILD', msg.guild);
     scope.setContext('MESSAGE', msg);
@@ -399,11 +405,11 @@ bot.on('message', async (msg) => {
     if (args.length === 1) return;
     if (lastTimeUpdateVatsim + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('vatsim-data.txt');
-      var req = http.get(VatsimWhazzup, function (response) {
+      var req = http.get(VatsimWhazzup, (response) => {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `Vatsim Whazzup downloaded`);
-          fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
+          fs.readFile('vatsim-data.txt', 'utf8', (err, contents) => {
             let contents_arr = contents.split(';\n;');
             let general = contents_arr[0].split('!GENERAL:')[1];
             let clients = contents_arr[1].split('!CLIENTS:')[1];
@@ -474,7 +480,7 @@ bot.on('message', async (msg) => {
                   request({
                     url: url,
                     headers: avwxHeaders
-                  }, function (err, response, body) {
+                  }, (err, response, body) => {
                     let noContent = false;
                     let info = {
                       error: false
@@ -552,7 +558,7 @@ bot.on('message', async (msg) => {
         });
       });
     } else {
-      fs.readFile('vatsim-data.txt', 'utf8', function (err, contents) {
+      fs.readFile('vatsim-data.txt', 'utf8', (err, contents) => {
         let contents_arr = contents.split(';\n;');
         let general = contents_arr[0].split('!GENERAL:')[1];
         let clients = contents_arr[1].split('!CLIENTS:')[1];
@@ -619,7 +625,7 @@ bot.on('message', async (msg) => {
                   url: url,
                   headers: avwxHeaders,
                 },
-                function (err, response, body) {
+                (err, response, body) => {
                   let noContent = false;
                   let info = {
                     error: false,
@@ -702,7 +708,7 @@ bot.on('message', async (msg) => {
     if (args.length === 1) return;
     if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function (response) {
+      var req = http.get(IVAOWhazzup, (response) => {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -710,7 +716,7 @@ bot.on('message', async (msg) => {
 
           extract.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+            fs.readFile('whazzup.txt', 'utf8', (err, contents) => {
               contents = contents.split('!GENERAL')[1];
               let general = contents.split('!CLIENTS')[0];
               contents = contents.split('!CLIENTS')[1];
@@ -787,7 +793,7 @@ bot.on('message', async (msg) => {
                     request({
                       url: url,
                       headers: avwxHeaders
-                    }, function (err, response, body) {
+                    }, (err, response, body) => {
                       let noContent = false;
                       let info = {
                         error: false
@@ -872,7 +878,7 @@ bot.on('message', async (msg) => {
         });
       });
     } else {
-      fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+      fs.readFile('whazzup.txt', 'utf8', (err, contents) => {
         contents = contents.split('!GENERAL')[1];
         let general = contents.split('!CLIENTS')[0];
         contents = contents.split('!CLIENTS')[1];
@@ -942,7 +948,7 @@ bot.on('message', async (msg) => {
               request({
                 url: url,
                 headers: avwxHeaders
-              }, function (err, response, body) {
+              }, (err, response, body) => {
                 let noContent = false;
                 let info = {
                   error: false
@@ -1023,7 +1029,7 @@ bot.on('message', async (msg) => {
     let FIR = ICAO.substring(0, 2);
     if (lastTimeUpdateIVAO + 400 < +moment.utc().format('YYYYMMDDHHmmss')) {
       var file = fs.createWriteStream('whazzup.txt.gz');
-      var req = http.get(IVAOWhazzup, function (response) {
+      var req = http.get(IVAOWhazzup, (response) => {
         response.pipe(file);
         response.on('end', () => {
           functions.logger(`info`, `IVAO Whazzup downloaded`);
@@ -1031,7 +1037,7 @@ bot.on('message', async (msg) => {
 
           extract.on('end', () => {
             functions.logger(`info`, `IVAO Whazzup extracted`);
-            fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+            fs.readFile('whazzup.txt', 'utf8', (err, contents) => {
               contents = contents.split('!GENERAL')[1];
               let general = contents.split('!CLIENTS')[0];
               contents = contents.split('!CLIENTS')[1];
@@ -1106,7 +1112,7 @@ bot.on('message', async (msg) => {
         });
       });
     } else {
-      fs.readFile('whazzup.txt', 'utf8', function (err, contents) {
+      fs.readFile('whazzup.txt', 'utf8', (err, contents) => {
         contents = contents.split('!GENERAL')[1];
         let general = contents.split('!CLIENTS')[0];
         contents = contents.split('!CLIENTS')[1];
@@ -1276,7 +1282,7 @@ bot.on('message', async (msg) => {
     request({
       url: url,
       headers: avwxHeaders
-    }, function (err, response, body) {
+    }, (err, response, body) => {
       let noContent = false;
       let metar = {
         error: false
@@ -1289,7 +1295,7 @@ bot.on('message', async (msg) => {
       if (noContent || metar.error) {
         request({
           url: `${avbrief3}${ICAO}`
-        }, function (err, response, body) {
+        }, (err, response, body) => {
           let metar = JSON.parse(body);
           if (metar.success && metar.m_text) {
             let metarEmbed = new Discord.RichEmbed()
@@ -1505,7 +1511,7 @@ bot.on('message', async (msg) => {
     request({
       url: url,
       headers: avwxHeaders
-    }, function (err, response, body) {
+    }, (err, response, body) => {
       let noContent = false;
       let taf = {
         error: false
@@ -1518,7 +1524,7 @@ bot.on('message', async (msg) => {
       if (noContent || taf.error) {
         request({
           url: `${avbrief3}${ICAO}`
-        }, function (err, response, body) {
+        }, (err, response, body) => {
           let taf = JSON.parse(body);
           if (taf.success && taf.t_text) {
             let tafEmbed = new Discord.RichEmbed()
@@ -1691,10 +1697,10 @@ bot.on('message', async (msg) => {
 
     request({
       url: `${avbrief3}${ICAO}`
-    }, function (err, response, body) {
+    }, (err, response, body) => {
       let atis = JSON.parse(body);
       if (atis.success && atis.a_text) {
-        let tafEmbed = new Discord.RichEmbed()
+        let atisEmbed = new Discord.RichEmbed()
           .setTitle(`ATIS for ${ICAO}`)
           .setColor(successColor)
           .setDescription(atis.a_text || 'unavailable')
@@ -1703,12 +1709,12 @@ bot.on('message', async (msg) => {
           );
 
         msg.channel
-          .send(tafEmbed)
+          .send(atisEmbed)
           .then(() => functions.logger(`info`, `${ICAO} ATIS sent to ${msg.author.tag}`))
           .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       } else {
         if (icao[ICAO]) {
-          let tafErrorEmbed = new Discord.RichEmbed()
+          let atisErrorEmbed = new Discord.RichEmbed()
             .setTitle(`ATIS for ${ICAO}`)
             .setColor(errorColor)
             .setDescription(
@@ -1716,7 +1722,7 @@ bot.on('message', async (msg) => {
             );
 
           msg.channel
-            .send(tafErrorEmbed)
+            .send(atisErrorEmbed)
             .then(() =>
               functions.logger(
                 `warn`,
@@ -1725,13 +1731,182 @@ bot.on('message', async (msg) => {
             )
             .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
-          let tafErrorEmbed = new Discord.RichEmbed()
+          let atisErrorEmbed = new Discord.RichEmbed()
             .setTitle(`ATIS for ${ICAO}`)
             .setColor(errorColor)
             .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
           msg.channel
-            .send(tafErrorEmbed)
+            .send(atisErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} ATIS but ${ICAO} is an invalid ICAO `
+              )
+            )
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+        }
+      }
+    })
+  }
+
+  if (cmd == `${prefix}atisjoin`) {
+    if (args.length === 1) return;
+    if (!msg.member.voiceChannel) {
+
+      let atisJoinErrorEmbed = new Discord.RichEmbed()
+        .setTitle(`ATIS for ${ICAO}`)
+        .setColor(errorColor)
+        .setDescription(`${msg.author}, you need to join a voice channel first!`)
+
+      msg.channel
+        .send(atisJoinErrorEmbed)
+        .then(() =>
+          functions.logger(
+            `warn`,
+            `${msg.author.tag} asked for ATIS Join for ${ICAO} but was not part of any voice channel`
+          )
+        )
+      return;
+    }
+    if (params[0] == '-stop') {
+      atisPlayingChannels[msg.member.voiceChannel.id].connection.disconnect();
+      await msg.member.voiceChannel.leave();
+
+      let atisJoinEmbed = new Discord.RichEmbed()
+        .setTitle(`ATIS for ${atisPlayingChannels[msg.member.voiceChannel.id].icao}`)
+        .setColor(successColor)
+        .setDescription(`${msg.author}, AvBot has disconnected from ${msg.member.voiceChannel}`)
+
+      msg.channel
+        .send(atisJoinEmbed).then(() => functions.logger(
+          `info`,
+          `${msg.author.tag} asked for ATIS Disconnect for ${ICAO} and AvBot disconnected from ${msg.member.voiceChannel}`
+        ))
+
+      atisPlayingChannels[msg.member.voiceChannel.id] = null;
+      return;
+    }
+    if (msg.member.voiceChannel && atisPlayingChannels[msg.member.voiceChannel.id]) {
+      let atisJoinEmbed = new Discord.RichEmbed()
+        .setTitle(`ATIS for ${ICAO}`)
+        .setColor(errorColor)
+        .setDescription(`${msg.author}, AvBot is already playing ${atisPlayingChannels[msg.member.voiceChannel.id].icao} ATIS in ${msg.member.voiceChannel}. Disconect it first to play different ATIS.`)
+
+      msg.channel
+        .send(atisJoinEmbed).then(() => functions.logger(
+          `info`,
+          `${msg.author.tag} asked for ATIS for ${ICAO} and but AvBot was already playing in ${msg.member.voiceChannel}`
+        ))
+      return;
+    }
+
+    request({
+      url: `${avbrief3}${ICAO}`
+    }, async (err, response, body) => {
+      let atis = JSON.parse(body);
+      if (atis.success && atis.a_text) {
+
+        let connection = null;
+        try {
+          connection = await msg.member.voiceChannel.join();
+          let msgSuffix = ``
+          if (!msg.member.voiceChannel.permissionsFor('522326039121231874').hasPermission('SPEAK')) {
+            msgSuffix = `but doesn't have Speak permission.`
+          }
+          let atisJoinEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(successColor)
+            .setDescription(`${msg.author}, AvBot is connected to ${msg.member.voiceChannel} ${msgSuffix}`)
+
+          msg.channel
+            .send(atisJoinEmbed)
+            .then(() => {
+
+              (async () => {
+                const request = {
+                  input: {
+                    text: atis.a_text
+                  },
+                  voice: {
+                    languageCode: 'en-US',
+                    ssmlGender: 'NEUTRAL',
+                  },
+                  audioConfig: {
+                    audioEncoding: 'MP3'
+                  },
+                };
+
+                // @ts-ignore
+                const [response] = await tts_client.synthesizeSpeech(request);
+                const writeFile = util.promisify(fs.writeFile);
+                await writeFile(`${ICAO}.mp3`, response.audioContent, 'binary');
+                atisPlayingChannels[msg.member.voiceChannel.id] = {
+                  connection: connection,
+                  icao: ICAO
+                }
+
+                const play = (channelId) => {
+                  try {
+                    const dispatcher = atisPlayingChannels[channelId].connection.playFile(`${atisPlayingChannels[channelId].icao}.mp3`)
+                    dispatcher.on('end', () => {
+                      play(channelId);
+                    });
+                  } catch (error) {}
+                }
+
+                play(msg.member.voiceChannel.id);
+              })()
+
+
+              functions.logger(
+                `info`,
+                `${msg.author.tag} asked for ATIS Join for ${ICAO} and AvBot connected to ${msg.member.voiceChannel} ${msgSuffix}`
+              )
+            })
+        } catch (error) {
+          let atisJoinErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(`${msg.author}, AvBot is unable to join ${msg.member.voiceChannel}.`)
+            .setFooter(`Please check ${msg.member.voiceChannel.name}'s user limit and access permissions.`)
+
+          msg.channel
+            .send(atisJoinErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ATIS Join for ${ICAO} but AvBot didn't have permissions`
+              )
+            )
+        }
+
+      } else {
+        if (icao[ICAO]) {
+          let atisErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(
+              `${msg.author}, ATIS not found for ${ICAO}.`
+            );
+
+          msg.channel
+            .send(atisErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} ATIS but got error.`
+              )
+            )
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+        } else {
+          let atisErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
+
+          msg.channel
+            .send(atisErrorEmbed)
             .then(() =>
               functions.logger(
                 `warn`,
@@ -1752,7 +1927,7 @@ bot.on('message', async (msg) => {
     request({
       url: url,
       headers: avwxHeaders
-    }, function (err, response, body) {
+    }, (err, response, body) => {
       let noContent = false;
       let info = {
         error: false
@@ -1908,7 +2083,7 @@ bot.on('message', async (msg) => {
             var lat = latLong[0];
             var long = latLong[1];
             let url = `http://api.geonames.org/timezoneJSON?formatted=true&lat=${lat}&lng=${long}&username=targaryen&style=full`;
-            request(url, function (err, response, body) {
+            request(url, (err, response, body) => {
               if (err) {
                 let state = false;
               } else {
@@ -1986,7 +2161,7 @@ bot.on('message', async (msg) => {
     request({
       url: metarURL,
       headers: avwxHeaders
-    }, function (err, response, body) {
+    }, (err, response, body) => {
       let rawMetar = '';
       let readableMetar = '';
       let noContent = false;
@@ -2012,7 +2187,7 @@ bot.on('message', async (msg) => {
         path: `/navdb/chart/${ICAO}.pdf`,
       };
 
-      let req = http.request(options, function (res) {
+      let req = http.request(options, (res) => {
         if (res.statusCode != 200) {
           chartAvailable = false;
         }
@@ -2086,11 +2261,11 @@ bot.on('message', async (msg) => {
         if (params.length == 2) {
           let from = params[0].toUpperCase();
           let to = params[1].toUpperCase();
-          request(`${routeAPI}/search/plans?fromICAO=${from}&toICAO=${to}&limit=1`, function (
+          request(`${routeAPI}/search/plans?fromICAO=${from}&toICAO=${to}&limit=1`, (
             err,
             response,
             body
-          ) {
+          ) => {
             if (JSON.parse(body).length == 0) {
               let routeErrorEmbed = new Discord.RichEmbed()
                 .setTitle(`Route: ${from} ${to}`)
@@ -2108,7 +2283,7 @@ bot.on('message', async (msg) => {
                 .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             } else {
               let id = JSON.parse(body)[0].id;
-              request(`${routeAPI}/plan/${id}`, function (err, response, body) {
+              request(`${routeAPI}/plan/${id}`, (err, response, body) => {
                 let route = [];
                 let nodes = JSON.parse(body).route.nodes;
                 nodes = nodes.filter((e) => {
@@ -2416,134 +2591,134 @@ bot.on('message', async (msg) => {
               `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`
             )
             if (language === 'en') {
-                let helpEmbed = new Discord.RichEmbed()
-                  .setTitle('AvBot to the rescue!')
-                  .setColor(successColor)
-                  .addField(`${prefix}help`, `This command...`)
-                  .addField(
-                    `${prefix}chart [ICAO]`,
-                    `Example \”${prefix}chart VABB\". Gives you the latest chart of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}metar [ICAO]`,
-                    `Example \"${prefix}metar VABB\". Gives you live METAR of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}taf [ICAO]`,
-                    `Example \"${prefix}taf VABB\". Gives you live TAF of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}notam [ICAO]`,
-                    `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}atis [ICAO]`,
-                    `Example \"${prefix}atis VABB\". Gives you live ATIS of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}brief [ICAO]`,
-                    `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}icao [ICAO]`,
-                    `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`
-                  )
-                  .addField(
-                    `${prefix}ivao [CALLSIGN]`,
-                    `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`
-                  )
-                  .addField(
-                    `${prefix}online [FIR]`,
-                    `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`
-                  )
-                  .addField(
-                    `${prefix}vatsim [CALLSIGN]`,
-                    `Example \"${prefix}vatsim AIC001\" or \"${prefix}vatsim VIDP_TWR\". Gives you information about the chosen call sign on the VATSIM network.`
-                  )
-                  .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
-                  .addField(
-                    `${prefix}zulu [ICAO] [Local Time]`,
-                    `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`
-                  )
-                  .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
-                  .addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`);
+              let helpEmbed = new Discord.RichEmbed()
+                .setTitle('AvBot to the rescue!')
+                .setColor(successColor)
+                .addField(`${prefix}help`, `This command...`)
+                .addField(
+                  `${prefix}chart [ICAO]`,
+                  `Example \”${prefix}chart VABB\". Gives you the latest chart of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}metar [ICAO]`,
+                  `Example \"${prefix}metar VABB\". Gives you live METAR of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}taf [ICAO]`,
+                  `Example \"${prefix}taf VABB\". Gives you live TAF of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}notam [ICAO]`,
+                  `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}atis [ICAO]`,
+                  `Example \"${prefix}atis VABB\". Gives you live ATIS of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}brief [ICAO]`,
+                  `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}icao [ICAO]`,
+                  `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`
+                )
+                .addField(
+                  `${prefix}ivao [CALLSIGN]`,
+                  `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`
+                )
+                .addField(
+                  `${prefix}online [FIR]`,
+                  `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`
+                )
+                .addField(
+                  `${prefix}vatsim [CALLSIGN]`,
+                  `Example \"${prefix}vatsim AIC001\" or \"${prefix}vatsim VIDP_TWR\". Gives you information about the chosen call sign on the VATSIM network.`
+                )
+                .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
+                .addField(
+                  `${prefix}zulu [ICAO] [Local Time]`,
+                  `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`
+                )
+                .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
+                .addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`);
 
-                if (msg.member.hasPermission('ADMINISTRATOR')) {
-                  helpEmbed.addField(
-                    `${prefix}avbotprefix [NEW_PREFIX]`,
-                    `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`
-                  );
-                }
+              if (msg.member.hasPermission('ADMINISTRATOR')) {
+                helpEmbed.addField(
+                  `${prefix}avbotprefix [NEW_PREFIX]`,
+                  `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`
+                );
+              }
 
-                msg.channel
-                  .send(helpEmbed)
-                  .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
-                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+              msg.channel
+                .send(helpEmbed)
+                .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             }
 
             if (language === 'pl') {
-                let helpEmbed = new Discord.RichEmbed()
-                  .setTitle('AvBot na ratunek!')
-                  .setColor(successColor)
-                  .addField(`${prefix}help`, `Ta komenda...`)
-                  .addField(
-                    `${prefix}chart [ICAO]`,
-                    `Przykład \"${prefix}chart EPWA\". Podaje chart wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}metar [ICAO]`,
-                    `Przykład \"${prefix}metar EPWA\". Podaje METAR wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}taf [ICAO]`,
-                    `Przykład \"${prefix}taf EPWA\". Podaje live TAF wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}notam [ICAO]`,
-                    `Przykład \"${prefix}notam EPWA\". Podaje NOTAMy wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}brief [ICAO]`,
-                    `Przykład \"${prefix}brief EPWA\". Podaje METAR, TAF i najnowszy chart wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}icao [ICAO]`,
-                    `Przykład \"${prefix}icao EPWA\". Podaje informacje na temat wybranego lotniska.`
-                  )
-                  .addField(
-                    `${prefix}ivao [CALLSIGN]`,
-                    `Przykład \"${prefix}ivao LOT001\" or \"${prefix}ivao EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci IVAO.`
-                  )
-                  .addField(
-                    `${prefix}online [FIR]`,
-                    `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`
-                  )
-                  .addField(
-                    `${prefix}vatsim [CALLSIGN]`,
-                    `Przykład \"${prefix}vatsim LOT001\" or \"${prefix}vatsim EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci VATSIM.`
-                  )
-                  .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
-                  .addField(
-                    `${prefix}zulu [ICAO] [Czas Lokalny]`,
-                    `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`
-                  )
-                  .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
-                  .addField(
-                    `${prefix}invite`,
-                    `Podaje link do dołączenia do naszego serwera supportu AvBota.`
-                  );
+              let helpEmbed = new Discord.RichEmbed()
+                .setTitle('AvBot na ratunek!')
+                .setColor(successColor)
+                .addField(`${prefix}help`, `Ta komenda...`)
+                .addField(
+                  `${prefix}chart [ICAO]`,
+                  `Przykład \"${prefix}chart EPWA\". Podaje chart wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}metar [ICAO]`,
+                  `Przykład \"${prefix}metar EPWA\". Podaje METAR wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}taf [ICAO]`,
+                  `Przykład \"${prefix}taf EPWA\". Podaje live TAF wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}notam [ICAO]`,
+                  `Przykład \"${prefix}notam EPWA\". Podaje NOTAMy wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}brief [ICAO]`,
+                  `Przykład \"${prefix}brief EPWA\". Podaje METAR, TAF i najnowszy chart wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}icao [ICAO]`,
+                  `Przykład \"${prefix}icao EPWA\". Podaje informacje na temat wybranego lotniska.`
+                )
+                .addField(
+                  `${prefix}ivao [CALLSIGN]`,
+                  `Przykład \"${prefix}ivao LOT001\" or \"${prefix}ivao EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci IVAO.`
+                )
+                .addField(
+                  `${prefix}online [FIR]`,
+                  `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`
+                )
+                .addField(
+                  `${prefix}vatsim [CALLSIGN]`,
+                  `Przykład \"${prefix}vatsim LOT001\" or \"${prefix}vatsim EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci VATSIM.`
+                )
+                .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
+                .addField(
+                  `${prefix}zulu [ICAO] [Czas Lokalny]`,
+                  `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`
+                )
+                .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
+                .addField(
+                  `${prefix}invite`,
+                  `Podaje link do dołączenia do naszego serwera supportu AvBota.`
+                );
 
-                if (msg.member.hasPermission('ADMINISTRATOR')) {
-                  helpEmbed.addField(
-                    `${prefix}avbotprefix [NOWY_PREFIX]`,
-                    `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`
-                  );
-                }
+              if (msg.member.hasPermission('ADMINISTRATOR')) {
+                helpEmbed.addField(
+                  `${prefix}avbotprefix [NOWY_PREFIX]`,
+                  `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`
+                );
+              }
 
-                msg.channel
-                  .send(helpEmbed)
-                  .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
-                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+              msg.channel
+                .send(helpEmbed)
+                .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+                .catch((error) => functions.logger(`error`, JSON.stringify(error)));
             }
           })
           .catch((error) => functions.logger(`error`, JSON.stringify(error)));
