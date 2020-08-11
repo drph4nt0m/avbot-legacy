@@ -364,6 +364,7 @@ bot.on('message', async (msg) => {
   let timeform3 = time.format('DD/MM HH:mm');
 
   if (
+    cmd == `${prefix}vatsim` ||
     cmd == `${prefix}ivao` ||
     cmd == `${prefix}online` ||
     cmd == `${prefix}chart` ||
@@ -372,6 +373,7 @@ bot.on('message', async (msg) => {
     cmd == `${prefix}taf` ||
     cmd == `${prefix}notam` ||
     cmd == `${prefix}notams` ||
+    cmd == `${prefix}atis` ||
     cmd == `${prefix}icao` ||
     cmd == `${prefix}zulu` ||
     cmd == `${prefix}brief` ||
@@ -387,6 +389,7 @@ bot.on('message', async (msg) => {
     cmd == `${prefix}avbotprefix` ||
     cmd == `${prefix}avbotlanguage` ||
     cmd == `${prefix}broadcast` ||
+    cmd == `${prefix}premium` ||
     cmd == `${prefix}help`
   ) {
     functions.logger(`message`, `[${msg.guild.name}] "${msg}" by ${msg.author.tag}`);
@@ -1689,55 +1692,55 @@ bot.on('message', async (msg) => {
     request({
       url: `${avbrief3}${ICAO}`
     }, function (err, response, body) {
-        let atis = JSON.parse(body);
-        if (atis.success && atis.a_text) {
-          let tafEmbed = new Discord.RichEmbed()
+      let atis = JSON.parse(body);
+      if (atis.success && atis.a_text) {
+        let tafEmbed = new Discord.RichEmbed()
+          .setTitle(`ATIS for ${ICAO}`)
+          .setColor(successColor)
+          .setDescription(atis.a_text || 'unavailable')
+          .setFooter(
+            `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
+          );
+
+        msg.channel
+          .send(tafEmbed)
+          .then(() => functions.logger(`info`, `${ICAO} ATIS sent to ${msg.author.tag}`))
+          .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+      } else {
+        if (icao[ICAO]) {
+          let tafErrorEmbed = new Discord.RichEmbed()
             .setTitle(`ATIS for ${ICAO}`)
-            .setColor(successColor)
-            .setDescription(atis.a_text || 'unavailable')
-            .setFooter(
-              `This is not a source for official briefing. Please obtain a briefing from the appropriate agency `
+            .setColor(errorColor)
+            .setDescription(
+              `${msg.author}, ATIS not found for ${ICAO}.`
             );
 
           msg.channel
-            .send(tafEmbed)
-            .then(() => functions.logger(`info`, `${ICAO} ATIS sent to ${msg.author.tag}`))
+            .send(tafErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} ATIS but got error.`
+              )
+            )
             .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         } else {
-          if (icao[ICAO]) {
-            let tafErrorEmbed = new Discord.RichEmbed()
-              .setTitle(`ATIS for ${ICAO}`)
-              .setColor(errorColor)
-              .setDescription(
-                `${msg.author}, ATIS not found for ${ICAO}.`
-              );
+          let tafErrorEmbed = new Discord.RichEmbed()
+            .setTitle(`ATIS for ${ICAO}`)
+            .setColor(errorColor)
+            .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
 
-            msg.channel
-              .send(tafErrorEmbed)
-              .then(() =>
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} ATIS but got error.`
-                )
+          msg.channel
+            .send(tafErrorEmbed)
+            .then(() =>
+              functions.logger(
+                `warn`,
+                `${msg.author.tag} asked for ${ICAO} ATIS but ${ICAO} is an invalid ICAO `
               )
-              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-          } else {
-            let tafErrorEmbed = new Discord.RichEmbed()
-              .setTitle(`ATIS for ${ICAO}`)
-              .setColor(errorColor)
-              .setDescription(`${msg.author}, ${ICAO} is not a valid ICAO `);
-
-            msg.channel
-              .send(tafErrorEmbed)
-              .then(() =>
-                functions.logger(
-                  `warn`,
-                  `${msg.author.tag} asked for ${ICAO} ATIS but ${ICAO} is an invalid ICAO `
-                )
-              )
-              .catch((error) => functions.logger(`error`, JSON.stringify(error)));
-          }
+            )
+            .catch((error) => functions.logger(`error`, JSON.stringify(error)));
         }
+      }
     })
   }
 
@@ -2406,12 +2409,143 @@ bot.on('message', async (msg) => {
 
         msg.channel
           .send(prefixEmbed)
-          .then(() =>
+          .then(() => {
+            prefix = params[0];
             functions.logger(
               `info`,
               `Prefix changed to ${params[0]} for ${msg.guild.name} by ${msg.author.tag}`
             )
-          )
+            if (language === 'en') {
+                let helpEmbed = new Discord.RichEmbed()
+                  .setTitle('AvBot to the rescue!')
+                  .setColor(successColor)
+                  .addField(`${prefix}help`, `This command...`)
+                  .addField(
+                    `${prefix}chart [ICAO]`,
+                    `Example \”${prefix}chart VABB\". Gives you the latest chart of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}metar [ICAO]`,
+                    `Example \"${prefix}metar VABB\". Gives you live METAR of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}taf [ICAO]`,
+                    `Example \"${prefix}taf VABB\". Gives you live TAF of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}notam [ICAO]`,
+                    `Example \"${prefix}notam VABB\". Gives you live NOTAMs of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}atis [ICAO]`,
+                    `Example \"${prefix}atis VABB\". Gives you live ATIS of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}brief [ICAO]`,
+                    `Example \"${prefix}brief VABB\". Gives you live METAR, TAF and the latest chart of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}icao [ICAO]`,
+                    `Example \"${prefix}icao VABB\". Gives you information of the chosen airport.`
+                  )
+                  .addField(
+                    `${prefix}ivao [CALLSIGN]`,
+                    `Example \"${prefix}ivao AIC001\" or \"${prefix}ivao VIDP_TWR\". Gives you information about the chosen call sign on the IVAO network.`
+                  )
+                  .addField(
+                    `${prefix}online [FIR]`,
+                    `Example \"${prefix}online VABF\". Gives you information about all ATCs online under the chosen FIR on the IVAO network (currently matches by first two characters) [Under Development].`
+                  )
+                  .addField(
+                    `${prefix}vatsim [CALLSIGN]`,
+                    `Example \"${prefix}vatsim AIC001\" or \"${prefix}vatsim VIDP_TWR\". Gives you information about the chosen call sign on the VATSIM network.`
+                  )
+                  .addField(`${prefix}zulu`, `Gives you the current Zulu time.`)
+                  .addField(
+                    `${prefix}zulu [ICAO] [Local Time]`,
+                    `Example \"${prefix}zulu VABB 1350\". Gives you the Zulu time at the airport at the specified local time in 24hrs.`
+                  )
+                  .addField(`${prefix}link`, `Gives you the link to add AvBot to your Discord server.`)
+                  .addField(`${prefix}invite`, `Gives you the invite link to join our AvBot Support Server.`);
+
+                if (msg.member.hasPermission('ADMINISTRATOR')) {
+                  helpEmbed.addField(
+                    `${prefix}avbotprefix [NEW_PREFIX]`,
+                    `Example \"${prefix}avbotprefix +\". Changes the prefix for AvBot in your server.`
+                  );
+                }
+
+                msg.channel
+                  .send(helpEmbed)
+                  .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
+
+            if (language === 'pl') {
+                let helpEmbed = new Discord.RichEmbed()
+                  .setTitle('AvBot na ratunek!')
+                  .setColor(successColor)
+                  .addField(`${prefix}help`, `Ta komenda...`)
+                  .addField(
+                    `${prefix}chart [ICAO]`,
+                    `Przykład \"${prefix}chart EPWA\". Podaje chart wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}metar [ICAO]`,
+                    `Przykład \"${prefix}metar EPWA\". Podaje METAR wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}taf [ICAO]`,
+                    `Przykład \"${prefix}taf EPWA\". Podaje live TAF wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}notam [ICAO]`,
+                    `Przykład \"${prefix}notam EPWA\". Podaje NOTAMy wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}brief [ICAO]`,
+                    `Przykład \"${prefix}brief EPWA\". Podaje METAR, TAF i najnowszy chart wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}icao [ICAO]`,
+                    `Przykład \"${prefix}icao EPWA\". Podaje informacje na temat wybranego lotniska.`
+                  )
+                  .addField(
+                    `${prefix}ivao [CALLSIGN]`,
+                    `Przykład \"${prefix}ivao LOT001\" or \"${prefix}ivao EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci IVAO.`
+                  )
+                  .addField(
+                    `${prefix}online [FIR]`,
+                    `Przykład \"${prefix}online EPWW\". Podaje wszystkie informacje na temat dostępnych ATC na wybranym obszarze sieci IVAO [W budowie].`
+                  )
+                  .addField(
+                    `${prefix}vatsim [CALLSIGN]`,
+                    `Przykład \"${prefix}vatsim LOT001\" or \"${prefix}vatsim EPWA_TWR\". Podaje informacje na temat wybranego CALL SIGNu na sieci VATSIM.`
+                  )
+                  .addField(`${prefix}zulu`, `Podaje obecny czas Zulu.`)
+                  .addField(
+                    `${prefix}zulu [ICAO] [Czas Lokalny]`,
+                    `Przykład \"${prefix}zulu EPWA 1350\". Podaje czas ZULU dla wybranego czasu lokalnego lotniska.`
+                  )
+                  .addField(`${prefix}link`, `Podaje link do dodania AvBota do twojego serwera.`)
+                  .addField(
+                    `${prefix}invite`,
+                    `Podaje link do dołączenia do naszego serwera supportu AvBota.`
+                  );
+
+                if (msg.member.hasPermission('ADMINISTRATOR')) {
+                  helpEmbed.addField(
+                    `${prefix}avbotprefix [NOWY_PREFIX]`,
+                    `Przykład \"${prefix}avbotprefix +\". Zmienia prefix AvBot na twoim serwerze.`
+                  );
+                }
+
+                msg.channel
+                  .send(helpEmbed)
+                  .then(() => functions.logger(`info`, `Help message sent to ${msg.author.tag}`))
+                  .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+            }
+          })
           .catch((error) => functions.logger(`error`, JSON.stringify(error)));
       }
     });
