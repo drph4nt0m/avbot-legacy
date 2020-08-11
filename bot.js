@@ -380,6 +380,7 @@ bot.on('message', async (msg) => {
     cmd == `${prefix}notam` ||
     cmd == `${prefix}notams` ||
     cmd == `${prefix}atis` ||
+    cmd == `${prefix}atisvoice` ||
     cmd == `${prefix}icao` ||
     cmd == `${prefix}zulu` ||
     cmd == `${prefix}brief` ||
@@ -1750,7 +1751,8 @@ bot.on('message', async (msg) => {
     })
   }
 
-  if (cmd == `${prefix}atisjoin`) {
+  if (cmd == `${prefix}atisvoice`) {
+    console.log(msg.member.guild.id)
     if (args.length === 1) return;
     if (!msg.member.voiceChannel) {
 
@@ -1770,11 +1772,11 @@ bot.on('message', async (msg) => {
       return;
     }
     if (params[0] == '-stop') {
-      atisPlayingChannels[msg.member.voiceChannel.id].connection.disconnect();
+      atisPlayingChannels[msg.member.guild.id].connection.disconnect();
       await msg.member.voiceChannel.leave();
 
       let atisJoinEmbed = new Discord.RichEmbed()
-        .setTitle(`ATIS for ${atisPlayingChannels[msg.member.voiceChannel.id].icao}`)
+        .setTitle(`ATIS for ${atisPlayingChannels[msg.member.guild.id].icao}`)
         .setColor(successColor)
         .setDescription(`${msg.author}, AvBot has disconnected from ${msg.member.voiceChannel}`)
 
@@ -1784,14 +1786,14 @@ bot.on('message', async (msg) => {
           `${msg.author.tag} asked for ATIS Disconnect for ${ICAO} and AvBot disconnected from ${msg.member.voiceChannel}`
         ))
 
-      atisPlayingChannels[msg.member.voiceChannel.id] = null;
+      atisPlayingChannels[msg.member.guild.id] = null;
       return;
     }
-    if (msg.member.voiceChannel && atisPlayingChannels[msg.member.voiceChannel.id]) {
+    if (msg.member.voiceChannel && atisPlayingChannels[msg.member.guild.id]) {
       let atisJoinEmbed = new Discord.RichEmbed()
         .setTitle(`ATIS for ${ICAO}`)
         .setColor(errorColor)
-        .setDescription(`${msg.author}, AvBot is already playing ${atisPlayingChannels[msg.member.voiceChannel.id].icao} ATIS in ${msg.member.voiceChannel}. Disconect it first to play different ATIS.`)
+        .setDescription(`${msg.author}, AvBot is already playing ${atisPlayingChannels[msg.member.guild.id].icao} ATIS in ${msg.member.guild.name}. Disconnect it before playing another ATIS.`)
 
       msg.channel
         .send(atisJoinEmbed).then(() => functions.logger(
@@ -1841,9 +1843,10 @@ bot.on('message', async (msg) => {
                 const [response] = await tts_client.synthesizeSpeech(request);
                 const writeFile = util.promisify(fs.writeFile);
                 await writeFile(`${ICAO}.mp3`, response.audioContent, 'binary');
-                atisPlayingChannels[msg.member.voiceChannel.id] = {
+                atisPlayingChannels[msg.member.guild.id] = {
                   connection: connection,
-                  icao: ICAO
+                  icao: ICAO,
+                  guild: msg.guild.id
                 }
 
                 const play = (channelId) => {
@@ -1855,7 +1858,7 @@ bot.on('message', async (msg) => {
                   } catch (error) {}
                 }
 
-                play(msg.member.voiceChannel.id);
+                play(msg.member.guild.id);
               })()
 
 
@@ -2402,7 +2405,7 @@ bot.on('message', async (msg) => {
   }
 
   if (cmd == `${prefix}link`) {
-    var inviteURL = `https://discordapp.com/oauth2/authorize?client_id=${bot.user.id}&scope=bot&permissions=251904`;
+    var inviteURL = `https://discordapp.com/oauth2/authorize?client_id=${bot.user.id}&scope=bot&permissions=3397888`;
 
     let linkEmbed = new Discord.RichEmbed()
       .setTitle('AvBot Link')
@@ -2884,6 +2887,10 @@ bot.on('message', async (msg) => {
         .addField(
           `${prefix}atis [ICAO]`,
           `Example \"${prefix}atis VABB\". Gives you live ATIS of the chosen airport.`
+        )
+        .addField(
+          `${prefix}atisvoice [ICAO]`,
+          `Example \"${prefix}atisvoice VABB\". Gives you live ATIS of the chosen airport in a voice channel.\nExample \"${prefix}atisvoice -stop\". Stop the current ATIS.`
         )
         .addField(
           `${prefix}brief [ICAO]`,
