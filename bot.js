@@ -7,7 +7,6 @@
  */
 
 const Discord = require('discord.js');
-const express = require('express');
 const mongoose = require('mongoose');
 const request = require('request');
 const http = require('http');
@@ -35,15 +34,7 @@ Sentry.configureScope((scope) => {});
 
 const tts_client = new textToSpeech.TextToSpeechClient();
 
-const app = express();
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(`${__dirname}/index.html`));
-});
-
-app.listen(process.env.PORT || 4040, () => console.log(`AvBot Started`));
-
-console.log(`Environment: ${app.get('env')}`);
 
 mongoose.connect(process.env.M_LAB, {
   useNewUrlParser: true,
@@ -225,16 +216,21 @@ bot.on('ready', async () => {
     .setColor(successColor)
     .setFooter(`${moment.tz(moment.utc(), 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')}`);
 
-  bot.channels
-    .find((channel) => channel.id === process.env.RESTART_CHANNEL)
-    .send(restartEmbed)
-    .then(() => {
-      bot.user.setStatus('online');
-      bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
-        type: 'WATCHING',
-      });
-    })
-    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+  bot.user.setStatus('online');
+  bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
+    type: 'WATCHING',
+  });
+
+  // bot.channels
+  //   .find((channel) => channel.id === process.env.RESTART_CHANNEL)
+  //   .send(restartEmbed)
+  //   .then(() => {
+  //     bot.user.setStatus('online');
+  //     bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
+  //       type: 'WATCHING',
+  //     });
+  //   })
+  //   .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
   setInterval(() => {
     dbl.postStats(bot.guilds.size, null, null);
@@ -283,11 +279,11 @@ bot.on('guildCreate', (guild) => {
     .addField(`Region`, `${guild.region}` || 'unavailable')
     .setFooter(`Joined at ${time_join}` || 'unavailable');
 
-  bot.channels
-    .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
-    .send(newGuildEmbed)
-    .then()
-    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+  // bot.channels
+  //   .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
+  //   .send(newGuildEmbed)
+  //   .then()
+  //   .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
   Guild.create({
     guild_id: guild.id,
@@ -329,11 +325,11 @@ bot.on('guildDelete', (guild) => {
     .addField(`Region`, `${guild.region}` || 'unavailable')
     .setFooter(`Removed at ${time_join}`);
 
-  bot.channels
-    .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
-    .send(removeGuildEmbed)
-    .then()
-    .catch((error) => functions.logger(`error`, JSON.stringify(error)));
+  // bot.channels
+  //   .find((channel) => channel.id === process.env.GUILDS_CHANNEL)
+  //   .send(removeGuildEmbed)
+  //   .then()
+  //   .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 });
 
 bot.on('message', async (msg) => {
