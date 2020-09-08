@@ -1752,7 +1752,6 @@ bot.on('message', async (msg) => {
   }
 
   if (cmd == `${prefix}atisvoice`) {
-    console.log(msg.member.guild.id)
     if (args.length === 1) return;
     if (!msg.member.voiceChannel) {
 
