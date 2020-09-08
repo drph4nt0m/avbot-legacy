@@ -217,7 +217,7 @@ bot.on('ready', async () => {
     .setFooter(`${moment.tz(moment.utc(), 'Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss')}`);
 
   bot.user.setStatus('online');
-  bot.user.setActivity(`!help on ${bot.guilds.size} servers`, {
+  bot.user.setActivity(`!help`, {
     type: 'WATCHING',
   });
 
@@ -232,8 +232,12 @@ bot.on('ready', async () => {
   //   })
   //   .catch((error) => functions.logger(`error`, JSON.stringify(error)));
 
+  dbl.postStats(bot.guilds.size, bot.shard.id, 3);
+  console.log('Stats updated');
+
   setInterval(() => {
-    dbl.postStats(bot.guilds.size, null, null);
+    dbl.postStats(bot.guilds.size, bot.shard.id, 3);
+    console.log('Stats updated');
   }, 1800000);
 });
 
