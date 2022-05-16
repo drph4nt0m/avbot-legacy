@@ -22,7 +22,7 @@
     "http": "0.0.0",
     "icao": "^1.0.1",
     "inly": "^4.0.5",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "moment-timezone": "^0.5.28",
     "mongoose": "^5.9.6",
     "node-opus": "^0.3.3",
